@@ -1,25 +1,19 @@
 \documentclass[12pt]{article}
 
 % Essential Packages
-% Použitie provide=* pre prípad, že slovenský balíček nie je nainštalovaný
-\usepackage[main=slovak,english,provide=*]{babel}
+\usepackage[main=slovak,english]{babel}
 \usepackage{setspace}
 \usepackage{pdfpages}
-% Times New Roman font - odkomentujte po inštalácii: sudo tlmgr install newtxtext
-% \usepackage{newtxtext} % Times New Roman
-% Dočasná náhrada - použije sa default font
+\usepackage{newtxtext} % Times New Roman
 \usepackage[a4paper, left=3.5cm, right=2cm, top=2.5cm, bottom=2.5cm]{geometry} % Margins
 \usepackage{graphicx}
 \usepackage[table]{xcolor}
-% tocbibind - odkomentujte po inštalácii: sudo tlmgr install tocbibind
-% \usepackage{tocbibind} % Automatické pridanie bibliografie do obsahu (používame ručne)
+\usepackage{tocbibind}
 \usepackage{fancyhdr}
-% glossaries - odkomentujte po inštalácii: sudo tlmgr install glossaries
-% \usepackage[acronym]{glossaries}
+\usepackage[acronym]{glossaries}
 \usepackage{url}
 \usepackage{caption}
-% csquotes - odkomentujte po inštalácii: sudo tlmgr install csquotes
-% \usepackage{csquotes}
+\usepackage{csquotes}
 \usepackage{longtable}
 
 \usepackage[T1]{fontenc} % Formatting
@@ -31,26 +25,26 @@
 
 % ‼️‼️‼️‼️ Choose thesis type ‼️‼️‼️‼️
 % Uncomment only one of the following lines:
-\def\isBachelorThesis{1} % Bachelor thesis
-%\def\isMasterThesis{1} % Master thesis
+%\def\isBachelorThesis{1} % Bachelor thesis
+\def\isMasterThesis{1} % Master thesis
 
 % Thesis metadata
 % Bachelor thesis info
 \ifdefined\isBachelorThesis
 \title{Názov bakalárskej práce}
-\author{Martin Muha}
+\author{Janko Mrkvička}
 \def\thesisHeader{Bakalárska práca} 
 \fi
 
 % Master thesis info 
 \ifdefined\isMasterThesis
 \title{Názov diplomovej práce}
-\author{Bc. Martin Muha}
+\author{Bc. Janko Mrkvička}
 \def\thesisHeader{Diplomová práca}
 \fi
 
 \def\uid{FI-123456-12345} % Replace with your own student ID
-\def\supervisor{Mgr. Michal Drobný}
+\def\supervisor{doc. RNDr. Severín Hrot, PhD.}
 \def\consultant{Mgr. Ignác Novák} % Optional, remove in titlepage-alt
 \def\thesisyear{2026}
 
@@ -65,11 +59,10 @@
 % style = iso-authoryear, iso-numeric
 % use \parencite{} or \textcite{} when using iso-authoryear
 % use \cite{} when using iso-numeric
-% biblatex - odkomentujte po inštalácii: sudo tlmgr install biblatex biblatex-iso690 biber
-% \usepackage[
-%     style=iso-authoryear,
-%     ]{biblatex}
-% \addbibresource{essentials/bibliography.bib}
+\usepackage[
+    style=iso-authoryear,
+    ]{biblatex}
+\addbibresource{essentials/bibliography.bib}
 
 % Formatting commands
 \onehalfspacing % 1.5 line spacing
@@ -80,9 +73,9 @@
 \fancyfoot[R]{\thepage}
 \renewcommand{\headrulewidth}{0pt}%
 
-% Loading Acronyms - odkomentujte po inštalácii glossaries balíčka
-% \makeglossaries
-% \loadglsentries{essentials/acronyms}
+% Loading Acronyms
+\makeglossaries
+\loadglsentries{essentials/acronyms}
 
 % Left align figure/table label
 \captionsetup{
@@ -142,17 +135,17 @@
 \listoffigures
 \pagebreak
 
-% Print Glossary - odkomentujte po inštalácii glossaries balíčka
-% \glsaddall % Optional for printing all acronyms, even if not used
-% \addcontentsline{toc}{section}{Zoznam skratiek a značiek}
-% \printglossary[type=\acronymtype,title={Zoznam skratiek a značiek}]
+% Print Glossary
+\glsaddall % Optional for printing all acronyms, even if not used
+\addcontentsline{toc}{section}{Zoznam skratiek a značiek}
+\printglossary[type=\acronymtype,title={Zoznam skratiek a značiek}]
 
 
 
 %%%%%%% DOCUMENT BODY %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Úvod}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eu lacus leo. Nulla egestas purus non dignissim tidunt. In sit amet tellus bibendum, lobortis magna ut, sodales mi. Etiam vel eros efficitur purus ultrices vulputate et quis justo. Nunc ultrices tellus a dui mattis, eget laoreet arcu tempor. Donec vestibulum, magna ac fringilla lacinia, libero risus fringilla arcu, nec consectetur nibh justo vel sem. Quisque gravida sit amet elit ut aliquam...\par
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eu lacus leo. Nulla egestas purus non dignissim tincidunt. In sit amet tellus bibendum, lobortis magna ut, sodales mi. Etiam vel eros efficitur purus ultrices vulputate et quis justo. Nunc ultrices tellus a dui mattis, eget laoreet arcu tempor. Donec vestibulum, magna ac fringilla lacinia, libero risus fringilla arcu, nec consectetur nibh justo vel sem. Quisque gravida sit amet elit ut aliquam...\par
 \vspace{1em}
 \noindent
 V prvej kapitole je popísaný súčasný stav riešenia problematiky. Popísaná je konštrukcia takého systému, ktorý ....
@@ -173,10 +166,10 @@ Cieľ bakalárskej práce bol splnený.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Bibliography - odkomentujte po inštalácii biblatex balíčka
-% \newpage
-% \printbibliography[title={Použitá literatúra}]
-% \addcontentsline{toc}{section}{Použitá literatúra}
+% Bibliography
+\newpage
+\printbibliography[title={Použitá literatúra}]
+\addcontentsline{toc}{section}{Použitá literatúra}
 
 % Appendices
 \include{essentials/appendices}
