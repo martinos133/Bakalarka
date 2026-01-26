@@ -6,6 +6,43 @@
 # Aktualizácia PATH pre LaTeX
 eval "$(/usr/libexec/path_helper)"
 
+# Pridanie štandardných ciest pre LaTeX na macOS
+if [ -d "/Library/TeX/texbin" ]; then
+    export PATH="/Library/TeX/texbin:$PATH"
+fi
+
+# Pridanie cesty pre BasicTeX (Homebrew)
+if [ -d "/usr/local/texlive" ]; then
+    export PATH="/usr/local/texlive/$(ls /usr/local/texlive | head -1)/bin/universal-darwin:$PATH"
+fi
+
+# Pridanie cesty pre BasicTeX (Homebrew ARM)
+if [ -d "/opt/homebrew/texlive" ]; then
+    export PATH="/opt/homebrew/texlive/$(ls /opt/homebrew/texlive 2>/dev/null | head -1)/bin/universal-darwin:$PATH"
+fi
+
+# Kontrola, či je pdflatex dostupný
+if ! command -v pdflatex &> /dev/null; then
+    echo "❌ Chyba: LaTeX nie je nainštalovaný!"
+    echo ""
+    echo "Pre inštaláciu LaTeX na macOS použite jeden z týchto spôsobov:"
+    echo ""
+    echo "1. BasicTeX (odporúčané - menšia inštalácia):"
+    echo "   brew install --cask basictex"
+    echo "   Potom reštartujte terminál alebo spustite:"
+    echo "   eval \"\$(/usr/libexec/path_helper)\""
+    echo ""
+    echo "2. MacTeX (plná inštalácia - veľká, ale kompletná):"
+    echo "   brew install --cask mactex"
+    echo ""
+    echo "Po inštalácii spustite:"
+    echo "   ./install-packages.sh"
+    echo ""
+    echo "A potom znova:"
+    echo "   ./compile.sh"
+    exit 1
+fi
+
 echo "Kompilujem LaTeX dokument..."
 
 # Kompilácia dokumentu (podľa postupu z README)
