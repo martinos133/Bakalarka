@@ -24,6 +24,8 @@
 
 \usepackage[T1]{fontenc} % Formatting
 \usepackage[utf8]{inputenc}
+\usepackage{lmodern} % Vector fonts (fixes blurry PK bitmap fonts)
+\usepackage{microtype} % Better kerning/protrusion (improves readability)
 
 % Optional packages
 \usepackage{listings}% Code blocks with syntax highlighting:
@@ -151,29 +153,54 @@
 
 %%%%%%% DOCUMENT BODY %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Začni písať sem (prázdne od začiatku):
+
 \section{Úvod}
+\subsection{Motiv\'acia a v\'yznam inzertn\'ych platforiem v s\'u\v{c}asnosti}
+\subsection{Definícia problému (centralizácia služieb a prenájmu)}
+\subsection{Ciele bakalárskej práce}
 
-\subsection{Motivácia výberu témy}
-% Tu napíšte text o motivácii výberu témy
+\section{S\'u\v{c}asn\'y stav rie\v{s}enej problematiky}
+\subsection{Analýza existujúcich inzertných portálov a freelancer platforiem}
+\subsection{Porovnanie s neformálnymi riešeniami (sociálne siete, ad-hoc formuláre)}
+\subsection{Trendy vo webovom vývoji (Server-side rendering, typová bezpečnosť)}
 
-\subsection{Cieľ bakalárskej práce}
-% Tu napíšte text o cieľoch bakalárskej práce
+\section{Analýza a návrh systému}
+\subsection{Funk\v{c}n\'e po\v{z}iadavky (pou\v{z}\'ivate\v{l}sk\'e roly: N\'av\v{s}tevn\'ik, Pou\v{z}\'ivate\v{l}, Administr\'ator)}
+\subsection{Nefunk\v{c}n\'e po\v{z}iadavky (bezpe\v{c}nos\v{t}, \v{s}k\'alovate\v{l}nos\v{t}, odozva)}
+\subsection{N\'avrh architekt\'ury: Model klient--server v prostred\'i monorepa}
+\subsection{Databázový model a entitno-relačný diagram (ERD)}
+\subsection{Návrh REST API rozhrania a autentifikačného mechanizmu (JWT)}
 
-\subsection{Stručná charakteristika aplikácie RentMe}
-% Tu napíšte stručnú charakteristiku aplikácie RentMe
+\section{Metodika a použité technológie}
+\subsection{Full-stack vývoj v jazyku TypeScript}
+\subsection{Backend: Framework NestJS a modulárna architektúra}
+\subsection{Frontend: Next.js (App Router), React a Tailwind CSS}
+\subsection{Perzistencia dát: PostgreSQL a Prisma ORM}
+\subsection{Nástroje pre správu kódu a kontajnerizáciu (Git, Docker Compose)}
 
-\subsection{Metódy použité v práci}
-% Tu napíšte text o metódach použité v práci
+\section{Implementácia systému}
+\subsection{Štruktúra monorepa a zdieľanie typov (npm workspaces, packages/shared)}
+\subsection{Realizácia backendových modulov (Auth, Ads, Categories, Search)}
+\subsection{Vývoj klientskych aplikácií}
+\subsubsection{Verejná platforma (vyhľadávanie, mapa, blog)}
+\subsubsection{Používateľská zóna (správa inzerátov a profilu)}
+\subsubsection{Administračný panel (CMS, vizuálny editor GrapesJS, štatistiky)}
+\subsection{Bezpečnostné aspekty: Hashovanie hesiel (bcrypt), validácia vstupov (class-validator) a ochrana účtov (banovanie)}
+\subsection{Systém dynamických filtrov a kategórií}
 
-\subsection{Štruktúra práce}
-% Tu napíšte text o štruktúre práce
+\section{Testovanie a výsledky}
+\subsection{Overenie funkčnosti API (Swagger dokumentácia)}
+\subsection{Analytika a monitoring (ClickEvent tracking a segmentácia používateľov)}
+\subsection{Vyhodnotenie pou\v{z}\'ivate\v{l}sk\'eho rozhrania a responzivity}
 
-% Examples:
-\include{examples/examples} 
+\section{Diskusia a prínosy práce}
+\subsection{Správa obsahu bez nutnosti redeployu (SiteMenu, SiteConfig)}
+\subsection{Možnosti ďalšieho rozšírenia (platobná brána, externé úložisko médií)}
 
 \section{Záver}
-Nezabudnite na Záver a zhodnotenie.\\  
-Cieľ bakalárskej práce bol splnený.
+\subsection{Zhrnutie dosiahnutých výsledkov}
+\subsection{Naplnenie stanovených cieľov}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -183,7 +210,7 @@ Cieľ bakalárskej práce bol splnený.
 % \printbibliography[title={Použitá literatúra}]
 % \addcontentsline{toc}{section}{Použitá literatúra}
 
-% Appendices
-\include{essentials/appendices}
+% Appendices - odkomentuj, keď budeš mať prílohy
+% \include{essentials/appendices}
 
 \end{document}
