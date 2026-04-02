@@ -154,6 +154,68 @@
     framesep=5pt                         % Space between frame and code
 }
 
+% TSX / React: syntax + zvýraznenie farieb v Tailwind triedach (hex, primary, \dots)
+\lstdefinelanguage{TSX}{%
+  keywords={function, const, let, return, export, import, from, default, async, await, if, else, switch, case, break, true, false, null, undefined, typeof, new, class, extends, this, void, as, interface, satisfies},
+  keywordstyle=\color{blue!70!black}\bfseries,
+  sensitive=true,
+  comment=[l]{//},
+  morestring=[b]',
+  morekeywords=[2]{button, span},
+  keywordstyle={[2]\color{teal!65!black}\bfseries},
+  morekeywords=[3]{onClick, className, type},
+  keywordstyle={[3]\color{violet!75!black}\bfseries},
+  literate=
+    {hover:border-[\#1dbf73]/40}{{\textcolor[rgb]{0.11,0.75,0.45}{hover:border-[\#1dbf73]/40}}}{25}
+    {border-[\#1dbf73]}{{\textcolor[rgb]{0.11,0.75,0.45}{border-[\#1dbf73]}}}{16}
+    {ring-[\#1dbf73]/25}{{\textcolor[rgb]{0.11,0.75,0.45}{ring-[\#1dbf73]/25}}}{17}
+    {[\#1dbf73]}{{\textcolor[rgb]{0.11,0.75,0.45}{[\#1dbf73]}}}{9}
+    {\#1dbf73}{{\textcolor[rgb]{0.11,0.75,0.45}{\#1dbf73}}}{7}
+    {border-primary}{{\textcolor{orange!75!black}{border-primary}}}{14}
+    {ring-primary/25}{{\textcolor{orange!75!black}{ring-primary/25}}}{15}
+    {hover:border-primary/40}{{\textcolor{orange!75!black}{hover:border-primary/40}}}{24}
+    {hover:border-primary}{{\textcolor{orange!75!black}{hover:border-primary}}}{19}
+    {ring-primary}{{\textcolor{orange!75!black}{ring-primary}}}{12}
+    {border-card}{{\textcolor{cyan!60!black}{border-card}}}{11}
+    {bg-card}{{\textcolor{cyan!60!black}{bg-card}}}{7}
+    {bg-white}{{\textcolor{cyan!60!black}{bg-white}}}{8}
+    {border-white/80}{{\textcolor{cyan!60!black}{border-white/80}}}{15}
+    {text-white}{{\textcolor{cyan!60!black}{text-white}}}{10}
+    {text-gray-900}{{\textcolor{cyan!60!black}{text-gray-900}}}{13}
+}
+
+% Java/TS výpis so slovenskými znakmi (pdfLaTeX: literate namiesto multibajtov v listings)
+\lstdefinestyle{slovakJava}{
+  language=Java,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue},
+  commentstyle=\color{green!60!black},
+  stringstyle=\color{red},
+  backgroundcolor=\color{gray!10},
+  frame=single,
+  framesep=5pt,
+  breaklines=true,
+  showstringspaces=false,
+  literate=%
+    {á}{{\'a}}1 {Á}{{\'A}}1
+    {ä}{{\"a}}1 {Ä}{{\"A}}1
+    {č}{{\v{c}}}1 {Č}{{\v{C}}}1
+    {ď}{{\v{d}}}1 {Ď}{{\v{D}}}1
+    {é}{{\'e}}1 {É}{{\'E}}1
+    {í}{{\'i}}1 {Í}{{\'I}}1
+    {ĺ}{{\'l}}1 {Ĺ}{{\'L}}1
+    {ľ}{{\v{l}}}1 {Ľ}{{\v{L}}}1
+    {ň}{{\v{n}}}1 {Ň}{{\v{N}}}1
+    {ó}{{\'o}}1 {Ó}{{\'O}}1
+    {ô}{{\^o}}1 {Ô}{{\^O}}1
+    {ŕ}{{\'r}}1 {Ŕ}{{\'R}}1
+    {š}{{\v{s}}}1 {Š}{{\v{S}}}1
+    {ť}{{\v{t}}}1 {Ť}{{\v{T}}}1
+    {ú}{{\'u}}1 {Ú}{{\'U}}1
+    {ý}{{\'y}}1 {Ý}{{\'Y}}1
+    {ž}{{\v{z}}}1 {Ž}{{\v{Z}}}1
+}
+
 % Redefine listing caption name
 \renewcommand{\lstlistingname}{Výpis}
 \renewcommand{\lstlistlistingname}{Zoznam výpisov}
@@ -691,12 +753,298 @@ Prisma funguje ako typovo bezpečný most (ORM), ktorý mi umožňuje pracovať 
 Výsledkom je kód, ktorý je menej náchylný na chyby a oveľa rýchlejšie sa vyvíja.
 
 \subsection{Frontend: Next.js (App Router), React a Tailwind CSS}
-\subsection{Perzistencia dát: PostgreSQL a Prisma ORM}
-\subsection{Nástroje pre správu kódu a kontajnerizáciu (Git, Docker Compose)}
+\noindent
+Frontendová architektúra pozostáva z troch samostatných aplikácií (\hlcode{platform}, \hlcode{user}, \hlcode{admin}), ktoré zdieľajú rovnaký technologický základ. Tento prístup umožňuje izolovať používateľské rozhrania podľa ich účelu, pričom sa zachováva konzistentný vývojový proces.
 
-\section{Implementácia systému}
-\subsection{Štruktúra monorepa a zdieľanie typov (npm workspaces, packages/shared)}
-\subsection{Realizácia backendových modulov (Auth, Ads, Categories, Search)}
+\subsubsection{Next.js a architektúra App Router}
+\noindent
+Použitie Next.js (verzia 16+) prináša do projektu revolučný prístup k vykresľovaniu stránok prostredníctvom App Routera.
+
+\begin{itemize}
+  \item \textbf{React Server Components (RSC):} Väčšina komponentov je predvolene vykresľovaná na strane servera. To znamená, že klient dostane hotový HTML dokument, čo dramaticky zrýchľuje prvé načítanie stránky a zlepšuje SEO, keďže vyhľadávače nemusia spúšťať zložitý JavaScript, aby videli obsah inzerátov. Okrem výkonu prinášajú RSC aj bezpečnostné výhody -- umožňujú pristupovať k citlivým dátam alebo premenným prostredia (napr. API kľúčom) priamo na serveri bez toho, aby boli tieto údaje odoslané do prehliadača klienta.
+  \item \textbf{Smerovanie (File-based Routing):} Next.js využíva adresárovú štruktúru na definovanie trás. Vďaka tomu je navigácia v aplikácii intuitívna a podporuje pokročilé funkcie ako paralelné trasy alebo interceptovanie trás (napr. zobrazenie detailu inzerátu v modálnom okne bez straty kontextu zoznamu).
+  \item \textbf{Optimalizácia:} Framework automaticky optimalizuje obrázky, fonty a skripty, čo zabezpečuje plynulý chod aplikácie aj na slabších mobilných zariadeniach.
+\end{itemize}
+
+\subsubsection{Deklaratívne UI s knižnicou React}
+\noindent
+Samotné používateľské rozhranie je postavené na knižnici React. Využívam moderné koncepty ako Hooks (\hlcode{useState}, \hlcode{useEffect}, \hlcode{useMemo}) na správu stavu a vedľajších účinkov.
+
+\begin{itemize}
+  \item \textbf{Komponentový prístup:} Každý prvok rozhrania (tlačidlo, karta inzerátu, vyhľadávací panel) je samostatný znovupoužiteľný komponent. To uľahčuje údržbu kódu a zabezpečuje vizuálnu jednotnosť naprieč všetkými tromi aplikáciami v monorepe.
+\end{itemize}
+
+\noindent\textit{Príklad komponentu s využitím podmienkového renderovania a Tailwind CSS (ukážka z \hlcode{CreateAdvertisementWizard}):}
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[
+  language=TSX,
+  basicstyle=\ttfamily\footnotesize,
+  columns=fullflexible,
+  keepspaces=true,
+  linewidth=\dimexpr\linewidth-1.2em\relax,
+  breaklines=true,
+  breakatwhitespace=false
+]
+function CategoryVisualTile({ cat, selected, onSelect, tileVariant = 'platform' }) {
+  const isAdmin = tileVariant === 'admin';
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={
+        isAdmin
+          ? `group flex flex-col items-center rounded-xl border-2 bg-card px-2 py-5 text-center transition-all ${
+              selected ? 'border-primary ring-2 ring-primary/25' : 'border-card hover:border-primary/40'
+            }`
+          : `group flex flex-col items-center rounded-2xl border-2 bg-white px-2 py-5 text-center transition-all ${
+              selected ? 'border-[#1dbf73] ring-2 ring-[#1dbf73]/25' : 'border-white/80 hover:border-[#1dbf73]/40'
+            }`
+      }
+    >
+      <span className={isAdmin ? 'text-white' : 'text-gray-900'}>{cat.name}</span>
+    </button>
+  );
+}
+\end{lstlisting}
+\end{minipage}
+\vspace{0.4\baselineskip}
+\noindent
+Táto ukážka demonštruje, ako jeden komponent dokáže dynamicky meniť svoj vzhľad na základe toho, či je vykresľovaný vo verejnej platforme alebo v administrátorskom rozhraní.
+
+\begin{itemize}
+  \item \textbf{Klientska interaktivita a hydratácia:} Kým jadro stránky je serverové, interaktívne prvky (napr. chat, mapové filtre alebo formuláre) využívajú klientske komponenty (označené direktívou \texttt{'use client'}). Pri kombinácii týchto prístupov dochádza k procesu zvanému \emph{hydratácia}. Next.js najprv pošle na klienta statické HTML pre rýchle zobrazenie obsahu a následne toto rozhranie „oživí“ pomocou JavaScriptu, čím sa dosiahne plná interaktivita a okamžitá odozva na akcie používateľa.
+\end{itemize}
+
+\subsubsection{Styling pomocou Tailwind CSS}
+\noindent
+Na definovanie vizuálnej identity platformy som zvolil Tailwind CSS, čo je \emph{utility-first} CSS framework.
+
+\begin{itemize}
+  \item \textbf{Rýchlosť vývoja a purging:} Namiesto písania tisícok riadkov v samostatných CSS súboroch definujem štýly priamo v HTML/JSX pomocou predpripravených tried. Tailwind počas zostavovania (\emph{build}) aplikácie analyzuje zdrojové súbory a do výsledného CSS zahrnie iba tie triedy, ktoré sú skutočne použité. Tento proces (scanning/purging) eliminuje „mŕtvy kód“ (\emph{dead code}) a výsledný štýl pre celú platformu má často veľkosť len niekoľko desiatok kilobajtov.
+  \item \textbf{Responzivita a Mobile-first:} Tailwind natívne podporuje responzívny dizajn. Vďaka tomu bolo možné jednoducho implementovať rozhranie, ktoré sa automaticky prispôsobuje od malých displejov smartfónov až po veľké desktopové monitory.
+  \item \textbf{Konzistencia:} Využitie konfiguračného súboru \hlcode{tailwind.config.js} zabezpečuje, že farby, písma a rozostupy sú identické vo všetkých aplikáciách, čo buduje profesionálny dojem z platformy.
+\end{itemize}
+
+\subsubsection{Integrácia s mapovými podkladmi (Leaflet)}
+\noindent
+Pre inzertný portál je kľúčová vizualizácia polohy. Vo fronte aplikácie \hlcode{platform} využívam knižnicu Leaflet v kombinácii s React komponentmi. Táto integrácia umožňuje návštevníkom dynamicky prehliadať inzeráty na interaktívnej mape, pričom dáta o polohe (latitúda a longitúda) sú v reálnom čase sťahované z NestJS API.
+
+Keďže knižnice ako Leaflet pracujú priamo s objektom \hlcode{window}, ktorý na serveri neexistuje, bolo nutné vyriešiť kompatibilitu so Server-Side Renderingom (SSR). V Next.js sa takéto klientske knižnice načítavajú asynchrónne pomocou funkcie \texttt{dynamic} z modulu \texttt{next/dynamic}, typicky zápisom v tvare:\par
+\nobreak\noindent{\small\texttt{dynamic(() => import(...), \{ ssr: false \})}}\par
+\nobreak\noindent
+Toto riešenie zabezpečí, že sa mapa inicializuje až priamo v prehliadači používateľa, čím sa predíde chybám pri renderovaní na serveri.
+
+\subsection{Perzistencia dát: PostgreSQL a Prisma ORM}
+\noindent
+Efektívna správa dát je základom každej úspešnej webovej aplikácie. V mojom projekte som sa rozhodol pre technologický zásobník, ktorý zaručuje integritu údajov, vysoký výkon pri zložitých dopytoch a vynikajúcu skúsenosť pri vývoji v TypeScripte.
+
+\subsubsection{Relačná databáza PostgreSQL}
+\noindent
+Ako úložisko dát som zvolil PostgreSQL, čo je pokročilá open-source objektovo-relačná databáza.
+
+\begin{itemize}
+  \item \textbf{Spoľahlivosť a integrita:} PostgreSQL striktne dodržiava princípy ACID (\emph{Atomicity}, \emph{Consistency}, \emph{Isolation}, \emph{Durability}), čo je nevyhnutné pri operáciách, ako je registrácia používateľa alebo spracovanie správ, kde nesmie dôjsť k strate či poškodeniu dát.
+  \item \textbf{Podpora geografických dát:} Vzhľadom na to, že platforma využíva mapové podklady, PostgreSQL je ideálnou voľbou vďaka svojej schopnosti efektívne pracovať so súradnicami a priestorovými dopytmi.
+  \item \textbf{Výkon pri vyhľadávaní:} Databáza umožňuje vytvárať indexy nad kľúčovými poľami (napr. \hlcode{slug}, \hlcode{categoryId}, \hlcode{createdAt}), čo zabezpečuje bleskovú odozvu pri filtrovaní tisícok inzerátov.
+  \item \textbf{Flexibilita s JSONB:} Využitie typu JSONB v PostgreSQL mi umožňuje ukladať dynamické parametre inzerátov (špecifikácie) s vysokým výkonom, pričom nad týmito dátami je možné vykonávať efektívne dopyty takmer rovnako rýchlo ako nad klasickými stĺpcami.
+\end{itemize}
+
+\subsubsection{Prisma ORM (Object-Relational Mapping)}
+\noindent
+Na komunikáciu medzi NestJS backendom a databázou PostgreSQL využívam Prisma ORM. Na rozdiel od tradičných ORM nástrojov, Prisma funguje na báze deklaratívnej schémy, ktorá slúži ako jediný zdroj pravdy (\emph{Single Source of Truth}) pre celý projekt.
+
+\begin{itemize}
+  \item \textbf{Typová bezpečnosť (\emph{Type-safety}):} Prisma automaticky generuje TypeScript klient priamo do priečinka \hlcode{node\_modules} na základe definovanej schémy (\hlcode{schema.prisma}). Vďaka tomu vývojové prostredie (napr. VS Code) presne vie, aké polia má napríklad model \hlcode{User}, bez nutnosti ručného písania TypeScript rozhraní pre databázu. Pri písaní databázových dopytov tak mám k dispozícii kompletné automatické dopĺňanie kódu a kompilátor ma upozorní na akúkoľvek nezrovnalosť.
+  \item \textbf{Prisma Schema:} V tomto súbore definujem nielen tabuľky (modely), ale aj ich vzájomné vzťahy (napr. \texttt{@relation} medzi inzerátom a autorom) a enumerátory (\texttt{enum}) pre stavy inzerátov či roly používateľov.
+  \item \textbf{Migrácie (Prisma Migrate):} Každú zmenu v štruktúre databázy spravujem pomocou migrácií. Prisma sleduje históriu zmien a umožňuje ich bezpečné a reprodukovateľné nasadenie na produkčný server, čím sa eliminuje riziko manuálnych chýb pri správe SQL skriptov.
+  \item \textbf{Výkon a optimalizácia (SQL vs.\ ORM):} Hoci použitie ORM môže v porovnaní s čistým SQL priniesť mierny režijný náklad (\emph{overhead}), Prisma je vysoko optimalizovaná a generuje efektívne SQL dopyty. Tento minimálny rozdiel vo výkone je bohato kompenzovaný elimináciou ľudských chýb pri písaní dopytov a obrovským zrýchlením vývoja vďaka typovej bezpečnosti.
+\end{itemize}
+
+\subsubsection{Prospech pre Monorepo architektúru}
+\noindent
+V rámci monorepa je Prisma umiestnená v samostatnom balíku \hlcode{packages/database}. Tento prístup umožňuje:
+
+\begin{itemize}
+  \item \textbf{Zdieľanie schémy:} API aplikácia využíva vygenerovaný klient na zápis a čítanie dát, zatiaľ čo ostatné časti projektu môžu využívať vygenerované typy pre validáciu.
+  \item \textbf{Jednoduchá údržba:} Ak potrebujem pridať nové pole do inzerátu (napríklad „vratná kaucia“), zmením to na jednom mieste v schéme, spustím migráciu a zmena sa okamžite prejaví v celom vývojovom prostredí.
+\end{itemize}
+
+\subsection{Nástroje pre správu kódu a kontajnerizáciu (Git, Docker Compose)}
+\noindent
+Efektívny vývoj softvéru vyžaduje nielen kvalitný kód, ale aj spoľahlivé nástroje na jeho verzovanie a orchestráciu služieb. V mojom projekte hrajú kľúčovú úlohu systémy Git a Docker, ktoré umožňujú bezpečnú správu verzií a izoláciu behového prostredia.
+
+\subsubsection{Verzovanie kódu pomocou systému Git}
+\noindent
+Systém Git je základným nástrojom na sledovanie zmien v zdrojovom kóde. V kontexte monorepa je jeho dôležitosť ešte vyššia, nakoľko spravuje históriu viacerých aplikácií a zdieľaných balíkov súčasne.
+
+\begin{itemize}
+  \item \textbf{Vetvenie (\emph{Branching strategy}):} Pri vývoji využívam logické rozdelenie funkcií do samostatných vetiev (napr. \hlcode{feature/auth}, \hlcode{feature/map-logic}). To umožňuje experimentovať s novými funkciami bez rizika narušenia stability hlavnej vetvy (\hlcode{main}).
+  \item \textbf{História a audit:} Git uchováva detailný prehľad o tom, kedy a prečo bola konkrétna zmena vykonaná. To je kľúčové pri hľadaní chýb (\emph{debugging}) alebo pri návrate k predchádzajúcej stabilnej verzii aplikácie.
+  \item \textbf{Ignorovanie súborov (\hlcode{.gitignore}):} Pomocou tohto súboru zabezpečujem, že sa do repozitára nedostanú zbytočné dáta (napríklad vygenerované priečinky \hlcode{node\_modules}) alebo citlivé údaje (ako sú konfiguračné súbory \hlcode{.env}).
+\end{itemize}
+
+\subsubsection{Kontajnerizácia pomocou technológie Docker}
+\noindent
+Pre zabezpečenie konzistentného správania aplikácie som sa rozhodol pre Docker. Táto technológia umožňuje „zabaliť“ aplikáciu spolu so všetkými jej závislosťami (Node.js, knižnice, konfiguračné súbory) do izolovaného kontajnera.
+
+\begin{itemize}
+  \item \textbf{Docker Image:} Každá časť systému (API, frontendy) má definovaný svoj vlastný \hlcode{Dockerfile}. Ten obsahuje inštrukcie na zostavenie obrazu, čím sa eliminuje problém typu „u mňa v počítači to funguje“, pretože kontajner beží v identickom prostredí bez ohľadu na operačný systém hostiteľa.
+  \item \textbf{Izolácia databázy:} Docker využívam aj na spustenie databázy PostgreSQL. Vďaka tomu nemusím databázový server inštalovať priamo do operačného systému, čo udržuje vývojové prostredie čisté a ľahko prenosné.
+\end{itemize}
+
+\subsubsection{Orchestrácia služieb cez Docker Compose}
+\noindent
+Vzhľadom na to, že môj projekt pozostáva z viacerých súbežne bežiacich služieb (API, tri frontendy a databáza), využívam nástroj Docker Compose.
+
+\begin{itemize}
+  \item \textbf{Konfigurácia jedným súborom:} Súbor \hlcode{docker-compose.yml} definuje celý ekosystém aplikácie. Obsahuje informácie o portoch, prepojeniach medzi kontajnermi a premenných prostredia.
+  \item \textbf{Jednoduchosť spustenia:} Celé komplexné prostredie je možné uviesť do prevádzky jediným príkazom \hlcode{docker-compose up}. Tento prístup dramaticky zrýchľuje proces nasadenia (\emph{deployment}) a uľahčuje spoluprácu, ak by sa na projekte podieľalo viacero vývojárov.
+  \item \textbf{Bezpečnosť a siete (\emph{Networking}):} Vďaka Docker Compose sú služby ako API a databáza prepojené v spoločnej internej virtuálnej sieti. To zvyšuje bezpečnosť, pretože databázový port nemusí byť vystavený do verejného internetu, ale je prístupný výhradne pre backendovú aplikáciu.
+\end{itemize}
+
+\subsubsection{Prepojenie s monorepom a optimalizácia obrazov}
+\noindent
+Nástroje na správu kódu sú plne integrované s \hlcode{npm workspaces}. Pri vytváraní Docker obrazov využívam viacúrovňové zostavovanie (\emph{multi-stage builds}). V prvej fáze (\emph{build stage}) sa nainštalujú všetky vývojárske závislosti a TypeScript kód sa skompiluje. V druhej fáze (\emph{production stage}) sa do výsledného obrazu prekopíruje už len hotový JavaScript a produkčné knižnice (vrátane nevyhnutných súborov zo zdieľaných balíkov \hlcode{packages/}).
+
+Výsledný kontajner je tak o stovky megabajtov menší a neobsahuje pôvodný zdrojový kód, čo sťažuje prípadný útok. K bezpečnosti a optimalizácii veľkosti prispieva aj súbor \hlcode{.dockerignore}, ktorý zabraňuje prekopírovaniu zbytočností (ako lokálne \hlcode{node\_modules}) či citlivých dát (\hlcode{.env} súbory) do vnútra kontajnera pri jeho zostavovaní.
+
+\section{Realizácia a implementácia systému}
+\noindent
+Implementácia systému prebiehala v súlade s princípmi moderného full-stack vývoja. V tejto kapitole detailne rozoberám vnútornú štruktúru projektu, spôsob zdieľania kódu a konkrétne technické riešenia jednotlivých modulov.
+
+\subsection{Štruktúra monorepa a zdieľanie typov}
+\noindent
+Pre správu celého ekosystému som zvolil architektúru monorepa s využitím nástroja \emph{npm workspaces}. Tento prístup mi umožnil sústrediť frontendovú aj backendovú logiku do jedného úložiska, čo výrazne zjednodušilo refaktoring a správu závislostí.
+
+\subsubsection{Organizácia adresárovej štruktúry}
+\noindent
+Projekt je rozdelený do dvoch hlavných priečinkov, ktoré jasne oddeľujú spustiteľné aplikácie od knižníc. Pre lepšiu orientáciu uvádzam zjednodušenú štruktúru projektu:
+
+\begin{minipage}{\linewidth}
+\colorbox{gray!10}{%
+\begin{minipage}{\dimexpr\linewidth-2\fboxsep\relax}
+\vspace{0.45\baselineskip}
+{\footnotesize\ttfamily
+\setlength{\baselineskip}{1.05\baselineskip}%
+\begin{tabbing}
+xxx\=xxx\=xxx\=\kill
+\>.\\
+\>\texttt{|-- apps/}\\
+\>\>\texttt{|-- admin/\quad\#\ Next.js (Admin panel)}\\
+\>\>\texttt{|-- api/\quad\#\ NestJS (Backend)}\\
+\>\>\texttt{|-- platform/\quad\#\ Next.js (Verejný web)}\\
+\>\>\texttt{|-- user/\quad\#\ Next.js (Používateľská zóna)}\\
+\>\texttt{|-- packages/}\\
+\>\>\texttt{|-- database/\quad\#\ Prisma schéma a klient}\\
+\>\>\texttt{|-- shared/\quad\#\ DTOs, TypeScript typy, Enums}\\
+\>\texttt{|-- package.json\quad\#\ Konfigurácia npm workspaces}\\
+\>\texttt{|-- docker-compose.yml\quad\#\ Orchestrácia celého monorepa}
+\end{tabbing}
+\vspace{0.35\baselineskip}
+}%
+\end{minipage}}%
+\end{minipage}
+\vspace{0.35\baselineskip}
+
+\begin{itemize}
+  \item \textbf{\texttt{apps/}:} Obsahuje štyri samostatné projekty: \hlcode{api} (NestJS), \hlcode{platform} (verejný Next.js web), \hlcode{user} (používateľská zóna) a \hlcode{admin} (správcovský panel). Každá z týchto aplikácií má vlastnú konfiguráciu a beží na samostatnom porte.
+  \item \textbf{\texttt{packages/}:} Obsahuje zdieľané moduly, ktoré nie sú samostatne spustiteľné, ale poskytujú logiku pre ostatné aplikácie. Najdôležitejšími sú \hlcode{database} (Prisma schéma a klient) a \hlcode{shared} (spoločné typy).
+\end{itemize}
+
+\subsubsection{Implementácia \texttt{packages/shared} a zdieľanie typov}
+\noindent
+Jednou z najväčších výziev pri vývoji oddeleného frontendu a backendu je udržanie konzistentných dátových typov. V mojom projekte som tento problém vyriešil vytvorením balíka \hlcode{shared}, ktorý slúži ako „jediný zdroj pravdy“.
+
+\begin{itemize}
+  \item \textbf{Zdieľané rozhrania (\emph{Interfaces}):} V tomto balíku definujem štruktúru všetkých objektov, ktoré prechádzajú cez sieť. Ak napríklad definujem rozhranie \hlcode{IAdvertisement}, obe strany (API aj frontend) presne vedia, aké polia (napr. \hlcode{title}, \hlcode{price}, \hlcode{images}) má daný objekt obsahovať.
+  \item \textbf{DTO (\emph{Data Transfer Objects}):} Pomocou knižnice \hlcode{class-validator} definujem v tomto balíku aj pravidlá pre validáciu vstupov. Tieto DTO triedy využíva NestJS na kontrolu prichádzajúcich požiadaviek a zároveň ich Next.js využíva na definovanie typov vo formulároch. Je dôležité zdôrazniť rozdelenie zodpovednosti: kým TypeScript stráži typy počas vývoja (\emph{compile-time}), \hlcode{class-validator} stráži dáta počas behu aplikácie (\emph{runtime}) a overuje napríklad to, či je zadaný textový reťazec skutočne platným e-mailom.
+  \item \textbf{End-to-End bezpečnosť:} Vďaka tomuto prepojeniu ma kompilátor TypeScriptu okamžite upozorní, ak na backende zmením názov poľa v databáze, ale na frontende sa ho stále pokúšam zobraziť. Týmto spôsobom som eliminoval veľké množstvo chýb, ktoré bežne vznikajú pri manuálnom prepisovaní typov.
+\end{itemize}
+
+\subsubsection{Mechanizmus npm workspaces}
+\noindent
+Nástroj \emph{npm workspaces} zabezpečuje, že všetky balíky v rámci monorepa sú navzájom prepojené prostredníctvom symbolických odkazov (\emph{symlinks}). To znamená, že pri lokálnom vývoji nemusím balík \hlcode{shared} zakaždým publikovať; zmeny vykonané v zdieľanom kóde sa okamžite prejavia vo všetkých aplikáciách, ktoré ho importujú. Tento mechanizmus je kľúčový pre agilný vývoj a rýchle prototypovanie nových funkcií.
+
+Okrem toho \emph{npm workspaces} rieši problém s duplicitnými závislosťami (tzv.\ \emph{hoisting}). Všetky aplikácie zdieľajú jeden spoločný priečinok \hlcode{node\_modules} v koreni projektu, čo výrazne šetrí miesto na disku a zrýchľuje inštaláciu závislostí.
+
+\subsection{Realizácia backendových modulov}
+\noindent
+Každý modul v systéme pozostáva z troch základných vrstiev: \emph{Controller} (vstupná brána a definícia endpointov), \emph{Service} (aplikačná logika a komunikácia s databázou) a \emph{Module} (konfigurácia závislostí).
+
+\subsubsection{Modul Auth: Autentifikácia a autorizácia}
+\noindent
+Tento modul je zodpovedný za bezpečnosť a správu identít. Implementácia využíva knižnicu \hlcode{@nestjs/passport} a stratégie pre JWT.
+
+\begin{itemize}
+  \item \textbf{Registrácia a login:} Služba \hlcode{AuthService} využíva bcrypt na porovnávanie hashovaných hesiel. Pri úspešnom prihlásení vygeneruje bezpečne podpísaný JWT token s exspiráciou. Payload tohto tokenu obsahuje identifikátor používateľa (\hlcode{sub}) a jeho rolu (\hlcode{role}), čo minimalizuje nutnosť dopytovať sa do databázy pri každom overovaní oprávnení.
+  \item \textbf{Zabezpečenie:} Na ochranu endpointov som vytvoril globálne guardy. \hlcode{JwtAuthGuard} extrahuje token z hlavičky \texttt{Authorization: Bearer} a validuje ho, zatiaľ čo \hlcode{RolesGuard} v spolupráci s dekorátorom \hlcode{@Roles()} kontroluje úroveň oprávnení (napr. prístup k mazaniu používateľov).
+\end{itemize}
+
+\subsubsection{Modul Ads: Správa inzerátov a médií}
+\noindent
+Modul \hlcode{AdsModule} je najrozsiahlejšou časťou backendu, nakoľko spracováva hlavnú entitu systému -- inzerát.
+
+\begin{itemize}
+  \item \textbf{CRUD operácie:} Implementoval som endpointy pre vytvorenie, čítanie, aktualizáciu a mazanie inzerátov. Pri vytváraní inzerátu sa automaticky generuje unikátny slug z názvu pre SEO účely.
+  \item \textbf{Spracovanie polohy:} Inzeráty ukladajú GPS súradnice (latitúda, longitúda), ktoré sú nevyhnutné pre zobrazenie na mape vo frontende.
+  \item \textbf{Stavy inzerátov:} Logika v \hlcode{AdsService} zabezpečuje prechody medzi stavmi \hlcode{PENDING} (čakajúci na schválenie), \hlcode{ACTIVE} (viditeľný) a \hlcode{ARCHIVED}.
+\end{itemize}
+
+\noindent\textit{Ukážka schvaľovacieho procesu inzerátu z \hlcode{AdvertisementsService}:}
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[
+  style=slovakJava,
+  linewidth=\dimexpr\linewidth-1.2em\relax,
+  breakatwhitespace=true
+]
+async approve(id: string) {
+  const advertisement = await prisma.advertisement.findUnique({ where: { id } });
+
+  if (!advertisement) throw new NotFoundException('Inzerát nebol nájdený');
+  if (advertisement.status !== 'PENDING') throw new ForbiddenException('Inzerát už bol spracovaný');
+
+  const updated = await prisma.advertisement.update({
+    where: { id },
+    data: { status: 'ACTIVE' },
+  });
+
+  // systémová správa o schválení pre používateľa
+  await this.messagesService.createSystemMessage(
+    advertisement.userId,
+    'AD_APPROVED',
+    'Váš inzerát bol schválený',
+    `Váš inzerát "${advertisement.title}" bol schválený a je teraz aktívny na platforme.`,
+    { advertisementId: id }
+  );
+
+  return updated;
+}
+\end{lstlisting}
+\end{minipage}
+\vspace{0.4\baselineskip}
+\noindent
+Táto ukážka jasne demonštruje, ako je služba napísaná odolne voči chybám (využitím \hlcode{NotFoundException} a \hlcode{ForbiddenException}). Kombinuje validáciu stavu, aktualizáciu v databáze a komunikáciu s iným modulom (\hlcode{MessagesService}) pre odoslanie notifikácie používateľovi ako vedľajší efekt.
+
+\subsubsection{Modul Categories a dynamické filtre}
+\noindent
+Tento modul spravuje hierarchickú štruktúru portálu.
+
+\begin{itemize}
+  \item \textbf{Stromová štruktúra:} Kategórie podporujú rekurzívne vnorenie (Parent-Child). API vracajú stromovú štruktúru dát, ktorá sa využíva v navigačnom menu platformy.
+  \item \textbf{Logika filtrov:} Každá kategória môže mať pridelenú sadu filtrov. Služba zabezpečuje, že pri vyhľadávaní v kategórii „Autá“ sa vrátia inzeráty filtrované podľa špecifických polí uložených v JSON objekte v databáze. Využívam tu schopnosť Prisma ORM dopytovať sa priamo do vnútra \hlcode{JSONB} stĺpcov, čím sa zachováva vysoký výkon vyhľadávania aj pri neštruktúrovaných dátach.
+\end{itemize}
+
+\subsubsection{Modul Search: Full-textové vyhľadávanie a analytika}
+\noindent
+Pre efektívne vyhľadávanie som implementoval dedikovanú logiku, ktorá kombinuje viaceré parametre.
+
+\begin{itemize}
+  \item \textbf{Filtrovanie:} Vyhľadávanie prebieha kombináciou full-textového hľadania v názve a popise inzerátu s presným filtrovaním podľa kategórie, ceny a lokality.
+  \item \textbf{\hlcode{ClickEvent} integrácia:} Každé zobrazenie detailu inzerátu vyvolá asynchrónne volanie v \hlcode{AnalyticsService}, ktoré zaznamená udalosť \hlcode{ClickEvent}. Vďaka asynchrónnemu spracovaniu „na pozadí“ používateľ vôbec nečaká na zapísanie štatistiky do databázy a inzerát sa mu zobrazí okamžite. Tieto dáta sa ukladajú s informáciou o type používateľa (pohlavie, vek), čo neskôr slúži na generovanie štatistík v admin paneli.
+\end{itemize}
+
 \subsection{Vývoj klientskych aplikácií}
 \subsubsection{Verejná platforma (vyhľadávanie, mapa, blog)}
 \subsubsection{Používateľská zóna (správa inzerátov a profilu)}
