@@ -11,6 +11,8 @@
 \usepackage[a4paper, left=3.5cm, right=2cm, top=2.5cm, bottom=2.5cm]{geometry} % Margins
 \usepackage{graphicx}
 \usepackage[table]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,backgrounds,fit,shadows,calc,positioning}
 % tocbibind - odkomentujte po inštalácii: sudo tlmgr install tocbibind
 % \usepackage{tocbibind} % Automatické pridanie bibliografie do obsahu (používame ručne)
 \usepackage{fancyhdr}
@@ -21,6 +23,7 @@
 % csquotes - odkomentujte po inštalácii: sudo tlmgr install csquotes
 % \usepackage{csquotes}
 \usepackage{longtable}
+\usepackage{booktabs}% profesionálne čiary v tabuľkách
 
 \usepackage[T1]{fontenc} % Formatting
 \usepackage[utf8]{inputenc}
@@ -29,7 +32,34 @@
 
 % Optional packages
 \usepackage{listings}% Code blocks with syntax highlighting:
-%\usepackage{hyperref} % PDF hyperlinks
+% PDF hyperlinks (klikateľné odkazy v PDF)
+\usepackage[hidelinks]{hyperref}
+
+% Inline zvýraznenie pojmov (sivý "code" štýl) — väčší vnútorný okraj, strut, zlomiteľnejšie medzery v \ttfamily
+\newcommand{\hlcode}[1]{%
+  \begingroup
+  \setlength{\fboxsep}{2.4pt}%
+  \setlength{\fboxrule}{0pt}%
+  \colorbox{gray!15}{%
+    \strut
+    {\ttfamily\small
+     \spaceskip=0.3333em plus 0.35em minus 0.08em
+     \xspaceskip=0.5em plus 0.33em minus 0.1em
+     #1}%
+  }%
+  \endgroup
+}
+% CamelCase: dva samostatné \colorbox — medzi nimi je zlom riadka (jeden veľký box sa inak nezmestí)
+\newcommand{\hlcamel}[2]{%
+  \begingroup
+  \setlength{\fboxsep}{2.4pt}%
+  \setlength{\fboxrule}{0pt}%
+  \colorbox{gray!15}{\strut{\ttfamily\small #1}}%
+  \allowbreak
+  \colorbox{gray!15}{\strut{\ttfamily\small #2}}%
+  \endgroup
+}
+\newcommand{\hllink}[2]{\href{#2}{\hlcode{#1}}}
 
 % ‼️‼️‼️‼️ Choose thesis type ‼️‼️‼️‼️
 % Uncomment only one of the following lines:
@@ -86,10 +116,16 @@
 % \makeglossaries
 % \loadglsentries{essentials/acronyms}
 
-% Left align figure/table label
+% Popisky obrázkov vľavo; tabuľky: popisok pod tabuľkou, kompaktnejšia typografia
 \captionsetup{
     justification=raggedright,
     singlelinecheck=false
+}
+\captionsetup[table]{
+    position=bottom,
+    skip=10pt,
+    font=small,
+    labelfont=bf
 }
 
 % Default image options
@@ -154,27 +190,506 @@
 %%%%%%% DOCUMENT BODY %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Začni písať sem (prázdne od začiatku):
-
 \section{Úvod}
-\subsection{Motiv\'acia a v\'yznam inzertn\'ych platforiem v s\'u\v{c}asnosti}
-\subsection{Definícia problému (centralizácia služieb a prenájmu)}
-\subsection{Ciele bakalárskej práce}
+\subsection{Motivácia a význam inzertných platforiem v súčasnosti}
+\noindent
+V súčasnej digitálnej ére prechádza spôsob, akým spotrebitelia vyhľadávajú služby a prenájmy, zásadnou transformáciou. Tradičné formy inzercie sú nahrádzané interaktívnymi webovými platformami, ktoré umožňujú okamžitý prístup k informáciám v reálnom čase. Hlavnou motiváciou pre vývoj modernej inzertnej platformy je potreba konsolidovať rozptýlenú ponuku do jedného transparentného a bezpečného ekosystému.
 
-\section{S\'u\v{c}asn\'y stav rie\v{s}enej problematiky}
-\subsection{Analýza existujúcich inzertných portálov a freelancer platforiem}
-\subsection{Porovnanie s neformálnymi riešeniami (sociálne siete, ad-hoc formuláre)}
-\subsection{Trendy vo webovom vývoji (Server-side rendering, typová bezpečnosť)}
+\subsubsection{Digitalizácia, dostupnosť a sieťový efekt}
+Moderný používateľ očakáva vysokú mieru flexibility a rýchlosti pri hľadaní odborných služieb či prenájmu. Kľúčovým faktorom úspechu je budovanie mena aplikácie a zvyšovanie jej návštevnosti, čím vzniká takzvaný sieťový efekt~--~s rastúcim počtom inzerátov a používateľov sa zvyšuje celkový dopyt po ponukách a hodnota platformy pre celú komunitu. Digitalizácia týchto procesov odbúrava administratívne bariéry a umožňuje efektívnejšie párovanie dopytu s ponukou.
+
+\subsubsection{Lokalizácia a geografický kontext}
+Pri službách a prenájmoch zohráva geografická poloha kritickú úlohu. Implementácia pokročilých mapových rozhraní a lokalizačných služieb (v projekte riešené cez knižnicu \hlcode{Leaflet}) umožňuje používateľom vizualizovať dostupnosť ponúk vo svojom bezprostrednom okolí. Tento prístup zvyšuje používateľský komfort a znižuje logistické náklady, pričom geografické vyhľadávanie sa stáva štandardom odlišujúcim profesionálne riešenia od jednoduchých textových zoznamov.
+
+\subsubsection{Jednoduchosť a používateľská prívetivosť}
+Okrem funkčnej vybavenosti je kľúčovým prvkom významu platformy jej jednoduchosť. Intuitívne používateľské rozhranie zabezpečuje, že aplikácia je prístupná širokému spektru osôb bez ohľadu na ich technické zručnosti. Práve nízka bariéra vstupu a rýchly proces publikácie inzerátu priamo podmieňujú ochotu používateľov opakovane sa do systému vracať.
+
+\subsubsection{Dôvera, bezpečnosť a transparentnosť}
+Jednou z najväčších výziev online inzercie je eliminácia podvodného správania. Význam platformy spočíva v schopnosti garantovať bezpečnosť prostredníctvom aktívnej moderácie, systémov na nahlasovanie podozrivých aktivít (modul \hlcode{reports}) a prísnych pravidiel pre schvaľovanie inzerátov administrátorom. Tieto prvky, spolu s prehľadnou históriou správ, budujú nevyhnutnú dôveru medzi subjektmi v digitálnom priestore.
+
+\subsection{Definícia problému (centralizácia služieb a prenájmu)}
+\noindent
+Súčasný digitálny trh so službami a prenájmom na Slovensku je príliš rozdrobený, čo komplikuje kontakt medzi tými, ktorí službu ponúkajú, a tými, ktorí ju hľadajú. Hlavným problémom je chýbajúca univerzálna platforma, ktorá by dokázala spojiť rôzne profesie a typy prenájmu na jednom mieste. Používatelia sú dnes nútení hľadať riešenia cez viaceré, často špecializované alebo neformálne kanály, ktoré však nespĺňajú všetky ich potreby.
+
+Dobrým príkladom špecializácie je portál \hlcode{pretlak.com}. Ponúka síce moderné prostredie, ale zameriava sa takmer výhradne na IT, marketing a kreatívny priemysel. Podobne sú na tom aj skupiny na sociálnych sieťach, napríklad skupina \hllink{Programátori}{https://www.facebook.com/groups/programatori/?locale=sk_SK}, ktorá slúži len úzkemu okruhu odborníkov na vývoj. Ostatné remeslá a profesie tak často končia na portáli \hlcode{bazos.sk}. Ten je však v prvom rade určený na predaj tovaru, nie na správu služieb. Navyše, jeho vizuálna stránka a ovládanie cielia skôr na staršie generácie, čo pre mladších používateľov, zvyknutých na moderné a rýchle aplikácie, predstavuje technologickú prekážku.
+
+Ďalšou výraznou slabinou je chýbajúca štruktúra a slabé možnosti filtrovania. Na sociálnych sieťach sa príspevky radia za sebou podľa času pridania, kvôli čomu zaujímavé ponuky rýchlo zapadnú. Keďže chýba podrobné vyhľadávanie, používateľ musí manuálne prechádzať množstvo inzerátov, ktoré ho nezaujímajú. Problémom je aj chýbajúci geografický prehľad. Bez mapy a presného určenia polohy je veľmi ťažké a zdĺhavé nájsť niekoho, kto poskytuje služby priamo v okolí používateľa.
+
+Z pohľadu bezpečnosti sú sociálne siete a fóra rizikové, pretože im chýbajú nástroje na kontrolu obsahu alebo overovanie osôb. Ak niekto poruší pravidlá, administrátor nemá k dispozícii systém, ktorý by okamžite zasiahol, čo vytvára priestor pre podvody. Prevádzkovatelia týchto skupín navyše nevedia sledovať, o čo majú ľudia skutočný záujem, pretože nemajú prístup k analytickým dátam. Moja práca na tieto nedostatky reaguje vytvorením centralizovanej platformy, ktorá spája všetky potrebné funkcie do jedného prehľadného systému s jasnými pravidlami a jednoduchým ovládaním.
+
+\subsection{Ciele bakalárskej práce}
+\noindent
+Hlavným cieľom tejto bakalárskej práce je navrhnúť a vytvoriť modernú webovú platformu, ktorá slúži na uverejňovanie a správu inzerátov v oblasti služieb a prenájmu. Celý systém je navrhnutý tak, aby na jednom mieste prepojil bežných používateľov, poskytovateľov služieb a administrátorov, čím nahrádza súčasné neprehľadné hľadanie na sociálnych sieťach alebo všeobecných inzertných weboch.
+
+Pre dosiahnutie tohto hlavného cieľa som si stanovil niekoľko konkrétnych úloh:
+
+Prvou úlohou je vytvorenie stabilného a bezpečného technického zázemia (backendu) pomocou frameworku \hlcode{NestJS}. Tento systém musí zvládnuť bezpečnú registráciu a prihlasovanie používateľov cez \hlcode{JWT} tokeny, správne ukladať dáta do databázy \hlcode{PostgreSQL} a zabezpečiť, aby sa k citlivým údajom nedostal nikto nepovolaný. Dôležitým bodom je aj kontrola vstupných údajov, aby sa predišlo chybám alebo útokom na aplikáciu.
+
+Druhou úlohou je vývoj troch samostatných webových aplikácií pomocou technológie \hlcode{Next.js}, ktoré sú prispôsobené konkrétnym skupinám ľudí. Verejná časť umožní návštevníkom rýchlo vyhľadávať inzeráty aj pomocou interaktívnej mapy, používateľská zóna dovolí registrovaným členom spravovať svoje ponuky a správy, a administračný panel poskytne nástroje na schvaľovanie obsahu a sledovanie štatistík. Pri tvorbe vzhľadu sa zameriavam na jednoduchosť a moderný dizajn, aby bola aplikácia príjemná pre mladšiu generáciu, no zároveň zrozumiteľná pre každého.
+
+Posledným dôležitým cieľom je implementácia analytických nástrojov a funkcií na moderovanie obsahu. Systém bude automaticky sledovať kliknutia na inzeráty, čo správcovi pomôže pochopiť, o ktoré kategórie je najväčší záujem. Zároveň bude platforma obsahovať funkcie na nahlasovanie nevhodných inzerátov a možnosť zablokovať problémových používateľov, čím sa zvýši celková bezpečnosť a dôveryhodnosť celého systému.
+
+\section{Súčasný stav riešenej problematiky}
+\noindent
+V tejto kapitole podrobujem analýze aktuálne dostupné riešenia v oblasti digitálnej inzercie a zdieľanej ekonomiky. Zameriavam sa na to, ako svetoví lídri a lokálne slovenské portály pristupujú k správe služieb a prenájmu, pričom identifikujem funkčné a technologické nedostatky, ktoré moja platforma odstraňuje.
+
+\subsection{Analýza konkurenčných platforiem a systémov}
+\noindent
+Pre pochopenie štandardov v odvetví je nevyhnutné analyzovať systémy, ktoré definujú súčasné trendy v oblasti digitálnych trhovísk (marketplace). Tieto platformy reprezentujú rôzne logické prístupy k spracovaniu dát a budovaniu dôvery medzi používateľmi.
+
+\subsubsection[Booking.com]{Booking.com (Model komplexnej rezervácie a správy kapacít)}
+\textbf{Charakteristika a logika:} Booking.com operuje na báze pokročilých algoritmov pre správu voľných kapacít v reálnom čase. Systém je postavený na okamžitej potvrdenej rezervácii a dynamickej tvorbe cien, čo si vyžaduje robustnú architektúru na zamedzenie duplicitných rezervácií.
+
+\textbf{Výhody:} Extrémne podrobné hierarchické filtrovanie a vysoká miera dôveryhodnosti budovaná cez overené recenzie.
+
+\textbf{Nevýhody:} Systém je uzavretý výhradne pre segment ubytovania. Pre malých lokálnych poskytovateľov iných služieb sú prekážkou vysoké provízie a rigidita systému, ktorý neumožňuje inzerovať predmety dennej potreby alebo remeselné práce.
+
+\textbf{Porovnanie s vlastným riešením:} Moja platforma preberá logiku podrobného filtrovania meta-údajov, avšak aplikuje ju univerzálne. Vďaka flexibilnej schéme v \hlcode{Prisma ORM} umožňujem inzerátom priraďovať rôzne špecifikácie (napr. technické parametre náradia) bez nutnosti meniť základnú architektúru databázy.
+
+\subsubsection[Fiverr.com]{Fiverr.com (Model produktizácie služieb -- Micro-gig economy)}
+\textbf{Charakteristika a logika:} Fiverr transformoval nehmotné služby na jasne definované balíčky (produkty). Logika fungovania spočíva v eliminácii vyjednávania o cene a rozsahu práce, čím sa proces nákupu služby približuje klasickému elektronickému obchodu.
+
+\textbf{Výhody:} Prehľadnosť nákupného procesu a automatizované filtrovanie kvality poskytovateľov cez systém úrovní.
+
+\textbf{Nevýhody:} Orientácia takmer výhradne na digitálne produkty doručiteľné online. Absencia lokalizačnej vrstvy a máp znemožňuje efektívne sprostredkovanie fyzických služieb v konkrétnom meste.
+
+\textbf{Porovnanie s vlastným riešením:} Implementujem logiku „služba ako produkt“, ale obohacujem ju o kľúčový geografický kontext. Integrácia mapových podkladov cez knižnicu \hlcode{Leaflet} a ukladanie GPS súradníc v \hlcode{PostgreSQL} umožňuje používateľom nájsť odborníka v ich bezprostrednom okolí.
+
+\subsubsection[Turo.com]{Turo.com (Model Peer-to-Peer zdieľania majetku)}
+\textbf{Charakteristika a logika:} Turo reprezentuje model zdieľanej ekonomiky v doprave, kde súkromné osoby monetizujú svoj nevyužitý majetok (automobily). Logika systému stojí na overovaní identity a synchronizácii s kalendárom vlastníka.
+
+\textbf{Výhody:} Efektívne využitie existujúcich zdrojov a prepracovaná vizuálna prezentácia majetku.
+
+\textbf{Nevýhody:} Ide o jednoúčelovú aplikáciu. Ak používateľ hľadá iný typ prenájmu (napr. stavebnú techniku), je nútený využiť ďalší samostatný systém.
+
+\textbf{Porovnanie s vlastným riešením:} Navrhované riešenie predstavuje integrovaný ekosystém, ktorý konsoliduje fragmentované potreby lokálneho trhu do jedinej platformy, čím odstraňuje nutnosť využívania viacerých jednoúčelových aplikácií.
+
+\subsection{Ekonomické modely modernej inzercie}
+\noindent
+Pre pochopenie fungovania navrhovanej platformy je nevyhnutné definovať dva kľúčové ekonomické koncepty, ktoré v poslednom desaťročí transformovali globálny trh práce a služieb.
+
+\subsubsection{Fenomén Micro-gig economy}
+Micro-gig economy (často označovaná aj ako „platformová ekonomika“) predstavuje model, v ktorom sú dlhodobé pracovné pomery nahrádzané krátkodobými, presne definovanými úlohami, takzvanými „gigmi“. Tento model zmenil vnímanie práce z fixného zamestnania na poskytovanie konkrétnej hodnoty v reálnom čase.
+
+\textbf{Logika a fungovanie:} Základom je digitalizácia dopytu. Platforma funguje ako algoritmus, ktorý páruje voľné kapacity dodávateľa s okamžitou potrebou odberateľa. Na rozdiel od klasickej inzercie sa tu hľadá „riešenie problému“. Príkladom je platforma Fiverr, kde je služba predávaná ako vopred zabalený produkt s fixnou cenou a termínom dodania.
+
+\textbf{Výhody pre trh:} Tento model umožňuje obrovskú mieru flexibility. Freelanceri môžu pracovať pre viacerých klientov súčasne a záujemcovia majú prístup k expertom bez nutnosti uzatvárania zložitých zmlúv.
+
+\textbf{Aplikácia v mojom projekte:} Moja platforma preberá z tohto modelu princíp „produktizácie“ služieb. Vytvoril som systém, kde si používateľ nevyberá len osobu, ale konkrétnu ponuku s jasnými parametrami. Vďaka modulu \hlcode{Advertisements} a dynamickým filtrom umožňujem inzerentom presne definovať rozsah svojej „mikro-zákazky“, čím znižujem čas potrebný na vyjednávanie.
+
+\subsubsection{Model Peer-to-Peer (P2P) a zdieľaná ekonomika}
+Model Peer-to-Peer (rovný s rovným) je základným stavebným kameňom zdieľanej ekonomiky. Ide o transakcie, ktoré prebiehajú priamo medzi dvoma koncovými používateľmi, pričom platforma vystupuje len ako technologický sprostredkovateľ a garant bezpečnosti.
+
+\textbf{Logika zdieľania majetku:} Hlavnou myšlienkou je efektívna monetizácia nevyužitých statkov. Tento prístup je nielen ekonomicky výhodný pre obe strany, ale aj ekologicky udržateľný. Platformy ako Airbnb dokázali, že technológia dokáže prekonať prirodzenú nedôveru medzi cudzími ľuďmi.
+
+\textbf{Budovanie dôvery:} Kľúčovým prvkom P2P logiky je reputačný systém a moderácia. Bez možnosti nahlásiť nekorektné správanie by tento model skolaboval.
+
+\textbf{Aplikácia v mojom projekte:} Moja platforma je postavená na P2P princípe najmä v segmente prenájmu. Implementoval som moduly \hlcode{Messages} pre bezpečnú komunikáciu a \hlcode{Reports} pre nahlasovanie incidentov, čo sú nevyhnutné nástroje na udržanie poriadku v P2P komunite. Na rozdiel od platforiem ako Bazoš, môj systém vďaka administrátorskému panelu umožňuje aktívne zasahovať a chrániť používateľov.
+
+\subsection{Technologické trendy a pridaná hodnota riešenia}
+\noindent
+Aby aplikácia obstála v konkurencii, využíva moderný technologický stack, ktorý rieši slabiny starších portálov.
+
+\textbf{Server-side Rendering (\hlcode{Next.js}):} Zabezpečuje rýchle načítanie a lepšiu indexáciu inzerátov vyhľadávačmi (SEO), čo je kľúčové pre návštevnosť verejnej platformy.
+
+\textbf{Typová bezpečnosť (\hlcode{TypeScript}):} Použitie monorepa umožňuje zdieľať dátové modely (DTO) medzi API a frontend aplikáciami, čím sa minimalizuje riziko nekonzistencií v dátach.
+
+\textbf{Analytika (\hlcode{ClickEvent}):} Na rozdiel od neformálnych riešení (Facebook skupiny) systém monitoruje správanie používateľov (kliknutia, segmentácia podľa pohlavia či typu účtu), čo umožňuje administrátorovi optimalizovať kategórie podľa skutočného dopytu.
 
 \section{Analýza a návrh systému}
-\subsection{Funk\v{c}n\'e po\v{z}iadavky (pou\v{z}\'ivate\v{l}sk\'e roly: N\'av\v{s}tevn\'ik, Pou\v{z}\'ivate\v{l}, Administr\'ator)}
-\subsection{Nefunk\v{c}n\'e po\v{z}iadavky (bezpe\v{c}nos\v{t}, \v{s}k\'alovate\v{l}nos\v{t}, odozva)}
-\subsection{N\'avrh architekt\'ury: Model klient--server v prostred\'i monorepa}
-\subsection{Databázový model a entitno-relačný diagram (ERD)}
-\subsection{Návrh REST API rozhrania a autentifikačného mechanizmu (JWT)}
+\noindent
+Návrh systému vychádza z rozdelenia platformy na štyri základné časti: verejná platforma, používateľské konto, admin panel a backend API. Tento prístup, realizovaný pomocou monorepo štruktúry a oddelených \hlcode{Next.js} aplikácií, umožňuje presne definovať oprávnenia pre rôzne skupiny používateľov a izolovať ich používateľské rozhrania.
+
+\subsection{Funkčné požiadavky}
+\noindent
+Funkčné požiadavky sú rozdelené podľa rolí, ktoré v systéme vystupujú. Každá rola má priradený špecifický rozsah akcií, ktoré môže v rámci aplikácie vykonávať. Na úrovni databázy je rola používateľa definovaná enumerátorom \hlcode{UserRole} (s hodnotami \hlcode{ADMIN} a \hlcode{USER}).
+
+Obrázok~\ref{fig:usecase-funkcne} zobrazuje diagram použitia (Use Case): vzťahy medzi aktérmi (Návštevník, Používateľ, Administrátor) a vybranými prípadmi použitia. Pri aktérovi Používateľ je šípkou zovšeobecnenia (UML generalization) znázornené, že okrem vlastných prípadov použitia zdedí aj možnosti návštevníka.
+
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{\input{diagrams/usecase-functional.tex}}
+\caption{Diagram použitia (Use Case) -- funkčné požiadavky a aktéri systému}
+\label{fig:usecase-funkcne}
+\end{figure}
+
+\subsubsection[Návštevník]{Rola: Návštevník (neprihlásený používateľ)}
+\noindent
+Návštevník je anonymný používateľ, ktorý primárne konzumuje verejne dostupný obsah bez potreby registrácie.
+
+\begin{itemize}
+  \item \textbf{Prehliadanie obsahu:} Používateľ môže prehliadať kategórie, zoznamy inzerátov a detaily jednotlivých ponúk.
+  \item \textbf{Vyhľadávanie a filtrácia:} Možnosť vyhľadávať inzeráty podľa kľúčových slov a filtrovať výsledky na základe dynamických parametrov kategórie.
+  \item \textbf{Mapové zobrazenie:} Prístup k interaktívnej mape, ktorá vizualizuje polohu inzerovaných služieb a prenájmov.
+  \item \textbf{Čítanie blogu:} Možnosť čítať publikované články a statické informačné stránky (napr. podmienky používania).
+  \item \textbf{Registrácia:} Návštevník má možnosť vytvoriť si používateľský účet.
+\end{itemize}
+
+\subsubsection[Používateľ]{Rola: Používateľ (registrovaný člen)}
+\noindent
+Používateľ má po prihlásení prístup k funkciám, ktoré umožňujú aktívnu participáciu na trhu služieb. Prístup k týmto funkciám je na backende chránený pomocou JWT autentifikácie (v \hlcode{NestJS} implementovanej cez \hlcode{JwtAuthGuard}).
+
+\begin{itemize}
+  \item \textbf{Správa profilu:} Úprava osobných údajov, firemných údajov (napr. IČO, DIČ) a zmena prístupového hesla.
+  \item \textbf{Manažment inzerátov:} Tvorba nových inzerátov (služba alebo prenájom), ich úprava, mazanie a sledovanie stavu schválenia. V databáze môže inzerát nadobúdať stavy definované enumerátorom \hlcode{AdvertisementStatus} (\hlcode{PENDING}, \hlcode{DRAFT}, \hlcode{ACTIVE}, \hlcode{INACTIVE}, \hlcode{ARCHIVED}).
+  \item \textbf{Komunikačný modul:} Odosielanie a prijímanie správ (dopytov) k inzerátom prostredníctvom integrovaného chatu.
+  \item \textbf{Obľúbené položky:} Ukladanie zaujímavých inzerátov do vlastného zoznamu pre neskorší návrat (entita \hlcode{Favorite}).
+  \item \textbf{Nahlasovanie (Reportovanie):} Možnosť nahlásiť inzerát, ktorý porušuje pravidlá platformy.
+\end{itemize}
+
+\subsubsection[Administrátor]{Rola: Administrátor}
+\noindent
+Administrátor má najvyššiu úroveň oprávnení a dohliada na technický a obsahový chod platformy cez dedikovaný admin panel. Na úrovni API sú tieto endpointy chránené kombináciou \hlcode{JwtAuthGuard} a vlastného \hlcode{RolesGuard}, ktorý overuje, či má prihlásený používateľ rolu \hlcode{ADMIN}.
+
+\noindent
+\begin{minipage}{\linewidth}% výpis v minipage sa nerozdelí naprieč stranami
+\begin{lstlisting}[language=Java]
+@Controller('admin')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN)
+export class AdminController {
+  // ...
+  @Get('stats')
+  getStats() {
+    return this.adminService.getStats();
+  }
+}
+\end{lstlisting}
+\end{minipage}
+\vspace{0.4\baselineskip}
+\begingroup
+\captionsetup{justification=centering, singlelinecheck=false}
+\captionof{lstlisting}{Ukážka zabezpečenia administrátorského endpointu v NestJS.}
+\label{lst:admin-endpoint}
+\endgroup
+
+\begin{itemize}
+  \item \textbf{Moderácia obsahu:} Schvaľovanie, zamietanie alebo archivácia inzerátov a riešenie prijatých nahlásení od používateľov.
+  \item \textbf{Správa používateľov:} Prehľad o registrovaných členoch s možnosťou udelenia dočasného alebo trvalého banu (blokovania účtu). Databázový model \hlcode{User} obsahuje na tento účel polia \hlcode{banned}, \hlcode{bannedUntil} a \hlcode{banReason}.
+  \item \textbf{CMS (Content Management System):} Tvorba a editácia statických stránok, blogových príspevkov a správa položiek v navigačnom menu.
+  \item \textbf{Konfigurácia systému:} Nastavovanie kategórií, hierarchie filtrov a globálnych parametrov platformy.
+  \item \textbf{Analytika a prehľady:} Sledovanie štatistík návštevnosti, kliknutí (\hlcode{ClickEvent}) a trendov v inzercii prostredníctvom grafov.
+\end{itemize}
+
+\subsection{Nefunkčné požiadavky}
+\noindent
+Nefunkčné požiadavky definujú technické limity a prevádzkové vlastnosti, ktoré sú nevyhnutné pre spoľahlivý chod platformy. Pri systéme, ktorý sprostredkováva interakciu medzi cudzími ľuďmi a narába s ich citlivými údajmi, som kládol dôraz predovšetkým na bezpečnosť, jednoduchú rozšíriteľnosť a rýchlu odozvu používateľského rozhrania.
+
+\subsubsection[Bezpečnosť]{Bezpečnosť a ochrana údajov}
+\noindent
+Vzhľadom na to, že platforma spracováva používateľské profily a súkromnú komunikáciu, je bezpečnosť prioritou.
+
+\textbf{Autentifikácia a autorizácia:} Prístup k citlivým častiam API je chránený platným JSON Web Tokenom (JWT). V prostredí \hlcode{NestJS} je táto vrstva realizovaná pomocou stratégie \hlcode{passport-jwt} a chránená globálnymi guardmi (\hlcode{JwtAuthGuard}, \hlcode{RolesGuard}), ktoré pri každej požiadavke overujú identitu aj priradenú rolu používateľa.
+
+\textbf{Hashovanie hesiel:} Heslá nie sú v databáze \hlcode{PostgreSQL} nikdy ukladané v čitateľnej podobe. Na ich bezpečnú transformáciu využívam kryptografický algoritmus \hlcode{bcrypt} so soľou (salt), čo znemožňuje ich spätné dešifrovanie.
+
+\textbf{Validácia vstupov:} Aby som predišiel útokom typu mass assignment alebo spracovaniu neúplných dát, systém automaticky filtruje každú prichádzajúcu požiadavku. Je to zabezpečené globálnym nastavením \hlcode{ValidationPipe} (režimy \hlcode{whitelist} a \hlcode{forbidNonWhitelisted}), ktoré v spolupráci s knižnicou \hlcode{class-validator} a DTO triedami prísne kontroluje štruktúru vstupov.
+
+\textbf{CORS a blokovanie zneužitia:} API má presne definované povolené zdroje (origins), čím sa bráni neautorizovaným volaniam z cudzích domén. Zároveň systém obsahuje mechanizmus banovania, ktorý administrátorovi umožňuje okamžite zablokovať prístup nahláseným používateľom (využitím polí \hlcode{banned} a \hlcode{banReason} v databáze).
+
+\subsubsection[Škálovateľnosť]{Škálovateľnosť a udržateľnosť systému}
+\noindent
+Platforma je navrhnutá tak, aby bolo možné v budúcnosti jednoducho pridávať nové funkcie bez nutnosti prepisovania existujúceho kódu.
+
+\textbf{Architektúra monorepa:} Využitie \hlcode{npm workspaces} mi umožnilo logicky oddeliť frontendové aplikácie (\hlcode{platform}, \hlcode{user}, \hlcode{admin}) od backendu (\hlcode{api}). Vďaka zdieľanému balíku \hlcode{packages/shared} sú dátové typy a DTO konzistentné naprieč celým projektom, čo výrazne znižuje chybovosť pri vývoji.
+
+\textbf{Modularita a ORM:} Backend je rozdelený do samostatných doménových modulov (napr. \hlcode{AuthModule}, \hlcamel{Advertisements}{Module}), čo uľahčuje údržbu a testovanie. Použitie \hlcode{Prisma ORM} zasa zabezpečuje, že zmeny v dátovom modeli sú typovo bezpečné a ľahko nasaditeľné pomocou verziovaných migrácií.
+
+\textbf{Kontajnerizácia:} Celý projekt je pripravený na nasadenie cez Docker. Súbor \hlcode{docker-compose.yml} definuje izolované prostredia pre databázu aj Node.js služby, čo zaručuje, že aplikácia sa bude správať identicky na mojom počítači aj na produkčnom serveri.
+
+\subsubsection[Výkon]{Výkon, odozva a SEO}
+\noindent
+Rýchlosť načítania a viditeľnosť vo vyhľadávačoch sú kľúčové pre úspech každého inzertného portálu.
+
+\textbf{Server-side Rendering (SSR):} Vďaka \hlcode{Next.js} (verzia 16+) sa obsah inzerátov generuje priamo na serveri. To zabezpečuje nielen okamžitú odozvu pre používateľa, ale aj ideálnu indexáciu Google robotmi, keďže HTML dokument už pri načítaní obsahuje dôležité SEO metadáta.
+
+\textbf{Optimalizácia databázy:} Pre zrýchlenie vyhľadávania pri veľkom množstve dát som v Prisma schéme definoval indexy (\hlcode{@@index}) pre najčastejšie filtrované polia, ako sú \hlcode{status}, \hlcode{slug} či \hlcode{categoryId}.
+
+\textbf{Responzívny dizajn:} Používateľské rozhranie postavené na \hlcode{Tailwind CSS} využíva prístup mobile-first. To zaručuje, že platforma je plne funkčná a vizuálne príťažlivá na smartfónoch aj veľkých monitoroch.
+
+\textbf{Práca s médiami:} API je optimalizované na spracovanie väčších objemov dát (limit 50\,MB), čo umožňuje bezproblémový prenos obrázkov inzerátov kódovaných vo formáte \hlcode{base64}.
+
+\subsection[Návrh architektúry]{Návrh architektúry: Model klient--server v prostredí monorepa}
+\noindent
+Architektúra systému je postavená na modernom koncepte monorepa, ktorý umožňuje efektívnu správu viacerých samostatných aplikácií a zdieľaných knižníc v rámci jedného úložiska (repozitára). Celý ekosystém je rozdelený na klientske aplikácie (front-end) a centrálny server (back-end), ktoré medzi sebou komunikujú prostredníctvom protokolu HTTP a formátu JSON.
+
+\subsubsection[Štruktúra monorepa]{Štruktúra monorepa a zdieľanie kódu}
+\noindent
+Projekt využíva nástroj \hlcode{npm workspaces}, ktorý zabezpečuje logické rozdelenie kódu do dvoch hlavných kategórií: aplikácie (\hlcode{apps/}) a balíčky (\hlcode{packages/}).
+
+\begin{itemize}
+  \item \textbf{Aplikácie (\hlcode{apps/}):} Obsahujú tri nezávislé \hlcode{Next.js} aplikácie s App Routerom (verzia 16+): verejnú platformu (\hlcode{apps/platform}), používateľské konto (\hlcode{apps/user}) a administráciu (\hlcode{apps/admin}). Štvrtou aplikáciou je centrálny \hlcode{NestJS} API server (\hlcode{apps/api}).
+  \item \textbf{Zdieľané balíčky (\hlcode{packages/}):} Kľúčovým prvkom je balík \hlcode{packages/shared}, ktorý obsahuje spoločné TypeScript typy, enumerátory (napríklad \hlcode{UserRole} a \hlcode{AdvertisementStatus}) a objekty DTO (Data Transfer Objects). Vďaka tomu je zaručené, že ak sa zmení štruktúra dát na backende, zmena sa okamžite premietne aj do frontendu, čím sa predchádza nekonzistenciám a chybám pri kompilácii.
+  \item \textbf{Databázový balík:} Balík \hlcode{packages/database} obsahuje definíciu Prisma schémy (\hlcode{schema.prisma}), vygenerovaného Prisma klienta a migračné skripty. Týmto je prístup k databáze centralizovaný a zdieľaný pre potreby API.
+\end{itemize}
+
+\subsubsection[Model klient--server]{Model klient--server}
+\noindent
+Systém funguje na princípe striktného oddelenia prezentácie od aplikačnej logiky a ukladania dát.
+
+\begin{itemize}
+  \item \textbf{Backend API (Server):} Je postavený na frameworku \hlcode{NestJS} a funguje ako centrálny bod systému. Zabezpečuje komunikáciu s databázou \hlcode{PostgreSQL} cez \hlcode{Prisma ORM}, vykonáva striktnú validáciu dát (pomocou \hlcode{ValidationPipe} a \hlcode{class-validator}) a overuje oprávnenia používateľov cez JWT tokeny (pomocou \hlcode{Passport.js}). API zároveň poskytuje automaticky generovanú Swagger dokumentáciu (\hlcode{/api/docs}).
+  \item \textbf{Klientske aplikácie (Klienti):} Tri samostatné aplikácie v \hlcode{Next.js} komunikujú s API prostredníctvom asynchrónnych HTTP požiadaviek (typicky smerovaných na \hlcode{NEXT\_PUBLIC\_API\_URL}). Tento prístup umožňuje, aby každá časť systému fungovala nezávisle a mala vlastné, optimalizované používateľské rozhranie prispôsobené konkrétnej role (napr. vizuálny editor \hlcode{GrapesJS} v admin paneli vs. interaktívna mapa \hlcode{Leaflet} na verejnej platforme).
+\end{itemize}
+
+\subsubsection[Dátový tok]{Dátový tok a komunikácia}
+\noindent
+Keď používateľ vykoná akciu (napríklad pridá nový inzerát), proces prebieha v nasledujúcich krokoch:
+
+\begin{enumerate}
+  \item \textbf{Iniciácia na klientovi:} Frontend (napr. \hlcode{apps/user}) zhromaždí dáta z formulára a odošle HTTP \hlcode{POST} požiadavku. Dáta sú už na strane klienta typované podľa zdieľaných DTO typov z balíka \hlcode{packages\allowbreak/shared}. Do hlavičky \hlcode{Authorization} je vložený JWT token prihláseného používateľa.
+  \item \textbf{Prijatie a validácia na serveri:} API server prijme požiadavku. Najprv overí identitu používateľa cez \hlcamel{JwtAuth}{Guard} (prípadne rolu cez \hlcamel{Roles}{Guard}). Následne globálna \hlcamel{Validation}{Pipe} skontroluje telo požiadavky voči DTO triede (odstráni neznáme polia a overí povinné parametre).
+  \item \begingroup\emergencystretch=4em\relax
+  \textbf{Zápis do databázy:} Ak sú dáta validné, príslušný kontrolér (napr. \hlcamel{Advertisements}{Controller}) posunie požiadavku do aplikačnej služby (\hlcamel{Advertisements}{Service}). Tá pomocou \hlcode{Prisma ORM} vykoná asynchrónny zápis do databázy \hlcode{PostgreSQL}.
+  \endgroup
+  \item \textbf{Odpoveď servera:} Server vráti odpoveď v JSON formáte (napr. vytvorený objekt inzerátu s vygenerovaným UUID a HTTP status kódom \hlcode{201 Created}).
+  \item \textbf{Aktualizácia používateľského rozhrania:} Frontend prijme odpoveď a zareaguje aktualizáciou rozhrania (napr. presmerovaním používateľa na detail novovytvoreného inzerátu alebo zobrazením notifikácie o úspechu).
+\end{enumerate}
+
+Obrázok~\ref{fig:flow-zapis-databazy} znázorňuje zjednodušený tok vrstiev pri zápise po úspešnej validácii (krok~3), v súlade s architektúrou NestJS a perzistenciou cez Prisma.
+
+\begin{figure}[htbp]
+\centering
+% Obmedzenie výšky — pri šírke \textwidth by vertikálny diagram presahoval stranu
+\resizebox{!}{0.34\textheight}{\input{diagrams/flow-zapis-databazy.tex}}
+\caption{Tok zápisu dát po validácii: kontrolér, aplikačná služba, Prisma ORM a databáza PostgreSQL}
+\label{fig:flow-zapis-databazy}
+\end{figure}
+
+\subsection[Databázový model]{Databázový model a entitno-relačný diagram (ERD)}
+\noindent
+Pre potreby perzistencie dát využívam relačnú databázu \hlcode{PostgreSQL}, ktorá je v rámci vývoja spravovaná pomocou nástroja \hlcode{Prisma ORM}. Tento prístup mi umožňuje definovať dátový model v prehľadnom deklaratívnom formáte (\hlcode{schema.prisma}) a následne automaticky generovať migračné skripty a typovo bezpečný klient pre backendovú aplikáciu.
+
+\subsubsection{Hlavné entity systému a ich význam}
+\noindent
+Logický model databázy pozostáva z niekoľkých kľúčových entít, ktoré sú navzájom prepojené reláciami typu 1:N (one-to-many) alebo M:N (many-to-many).
+
+\begin{itemize}
+  \item \textbf{User (Používateľ):} Predstavuje identitu v systéme. Okrem základných údajov ako e-mail a hashované heslo obsahuje informácie o roli (\hlcode{ADMIN} / \hlcode{USER}), firemné údaje pre predajcov (IČO, DIČ, \hlcode{isCompany}), predajný plán (\hlcode{SellerPlan}) a polia súvisiace s moderáciou, ako sú \hlcode{banned}, \hlcode{bannedUntil} a \hlcode{banReason}.
+
+  \item \textbf{Advertisement (Inzerát):} Centrálna entita obsahujúca detaily o ponúkanej službe alebo prenájme (\hlcode{AdvertisementType}). Inzerát je viazaný na konkrétneho autora (používateľa) a kategóriu. Obsahuje stavy definované enumerátorom \hlcode{AdvertisementStatus} (\hlcode{PENDING}, \hlcode{DRAFT}, \hlcode{ACTIVE}, \hlcode{INACTIVE}, \hlcode{ARCHIVED}), lokalitu (GPS súradnice \hlcode{latitude}, \hlcode{longitude}), cenu a špecifikácie uložené vo formáte JSON (\hlcode{specifications}) pre maximálnu flexibilitu parametrov bez nutnosti meniť databázovú schému pri každom novom parametri.
+
+  \item \textbf{Category (Kategória):} Zabezpečuje hierarchické usporiadanie inzerátov. Podporuje vnorenie (parent-child relácie cez \hlcode{parentId}), obsahuje SEO polia (\hlcode{metaTitle}, \hlcode{metaDescription}, \hlcode{slug}) a definuje poradie zobrazenia v navigácii (\hlcode{order}).
+
+  \item \textbf{Filter (Dynamický filter):} Úzko spolupracuje s kategóriami. Definuje, aké dodatočné parametre (napr. typ \hlcode{TEXT}, \hlcode{NUMBER}, \hlcode{SELECT}, \hlcode{MULTISELECT}, definované v \hlcode{FilterType}) môže používateľ pri inzeráte v danej kategórii zadať a podľa čoho môže návštevník vyhľadávať. Umožňuje tak dynamické rozširovanie vlastností inzerátov podľa ich zaradenia.
+
+  \item \textbf{Message (Správa):} Realizuje komunikačný kanál medzi záujemcom a inzerentom, ale aj systémové notifikácie (\hlcode{MessageType}). Správy sú logicky zoskupované do konverzácií (vlákien) pomocou odkazu na rodičovskú správu (\hlcode{parentId}), čo umožňuje prehľadné zobrazenie chatu v používateľskom rozhraní.
+
+  \item \textbf{Favorite (Obľúbené):} Spojovacia entita realizujúca reláciu M:N medzi používateľom a inzerátmi, ktoré si uložil na neskoršie prehliadnutie.
+
+  \item \textbf{Report (Nahlásenie):} Slúži na moderáciu obsahu. Uchováva informáciu o sťažnosti na konkrétny inzerát, dôvod nahlásenia (\hlcode{ReportReason} -- napr. \hlcode{SPAM}, \hlcode{SCAM}, \hlcode{FAKE}) a stav riešenia administrátorom (\hlcode{ReportStatus}).
+
+  \item \textbf{Payment (Platba):} Zaznamenáva finančné transakcie medzi záujemcom (\hlcode{renter}) a vlastníkom inzerátu (\hlcode{owner}), pričom sleduje stav platby (\hlcode{PaymentStatus}) a obdobie prenájmu/poskytnutia služby.
+
+  \item \textbf{StaticPage a BlogPost (CMS obsah):} Slúžia na správu obsahu priamo z admin panelu. Obsahujú HTML text, SEO metadáta a stav publikovania (\hlcode{DRAFT} / \hlcode{PUBLISHED}), čím umožňujú administrátorom upravovať informačné podstránky a blog bez zásahu do kódu.
+
+  \item \textbf{ClickEvent (Analytika):} Špeciálna entita určená na zber údajov o správaní používateľov. Zaznamenáva typ interakcie (\hlcode{eventType}), cieľový inzerát alebo kategóriu a segmentačné údaje (pohlavie, typ účtu), čo slúži ako podklad pre administratívne štatistiky a grafy.
+\end{itemize}
+
+\subsubsection{Entitno-relačný diagram (ERD)}
+\noindent
+ER diagram vizualizuje prepojenia medzi týmito entitami.
+
+\begin{itemize}
+  \item Relácia medzi \hlcode{User} a \hlcode{Advertisement} je typu \textbf{1:N}, keďže jeden používateľ môže vytvoriť viacero inzerátov, ale inzerát patrí vždy jednému autorovi.
+  \item Podobne \hlcode{Category} a \hlcode{Advertisement} tvoria vzťah \textbf{1:N}, kde každá kategória zastrešuje množinu prislúchajúcich ponúk.
+  \item Entita \hlcode{Category} má definovanú \textbf{unárnu reláciu 1:N} sama na seba (cez \hlcode{parentId}), čím sa vytvára stromová štruktúra (hlavné kategórie a podkategórie).
+  \item Entita \hlcode{Favorite} predstavuje klasickú dekompozíciu vzťahu \textbf{M:N} medzi používateľom a inzerátom.
+  \item Entita \hlcode{Payment} prepája inzerát s dvoma používateľmi (vlastníkom a platcom), čo vytvára komplexnejšiu sieť vzťahov nad tabuľkou používateľov.
+\end{itemize}
+
+\subsection[REST API a JWT]{Návrh REST API rozhrania a autentifikačného mechanizmu (JWT)}
+\noindent
+Komunikácia v systéme prebieha prostredníctvom REST API (Representational State Transfer), ktoré využíva protokol HTTP a formát JSON na výmenu údajov. API je navrhnuté ako bezstavové, čo znamená, že každá požiadavka od klienta musí obsahovať všetky informácie potrebné na jej spracovanie, vrátane overenia identity.
+
+\subsubsection{Návrh endpointov a smerovania}
+\noindent
+API je logicky rozdelené do modulov, ktoré zodpovedajú doménam v databáze. Každý modul definuje sadu koncových bodov (endpointov) pre operácie CRUD (Create, Read, Update, Delete) a špecifickú biznis logiku.
+
+\begin{table}[htbp]
+\centering
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{6.5pt}
+\renewcommand{\arraystretch}{1.38}
+\rowcolors{2}{gray!7}{white}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.165\linewidth}>{\raggedright\arraybackslash}p{0.235\linewidth}>{\raggedright\arraybackslash}p{0.515\linewidth}@{}}
+\toprule
+\rowcolor{gray!14}
+\textbf{Modul} & \textbf{Základná cesta} & \textbf{Významné operácie} \\
+\midrule
+\textbf{Auth} & \hlcode{/auth} & Registrácia, prihlásenie, získanie profilu prihláseného používateľa. \\
+\textbf{Advertise\-ments} & \hlcode{/advertisements} & Vyhľadávanie, tvorba inzerátov, schvaľovanie (admin), mapa. \\
+\textbf{Messages} & \hlcode{/messages} & Odosielanie dopytov, správa konverzácií a chat. \\
+\textbf{Analytics} & \hlcode{/analytics} & Zaznamenávanie kliknutí (\hlcode{/click}) a generovanie reportov. \\
+\bottomrule
+\end{tabular}
+\endgroup
+\caption{Prehľad hlavných modulov API a základných ciest}
+\label{tab:api-moduly}
+\end{table}
+
+Všetky endpointy sú zdokumentované pomocou nástroja Swagger, ktorý je prístupný na adrese \hlcode{GET /api/docs}. Táto dokumentácia slúži ako kontrakt medzi backendom a frontendovými tímami (v tomto prípade aplikáciami \hlcode{platform}, \hlcode{user} a \hlcode{admin}).
+
+\subsubsection{Autentifikačný mechanizmus (JWT)}
+\noindent
+Na zabezpečenie prístupu k chráneným zdrojom využíva platforma JSON Web Token (JWT). Tento mechanizmus umožňuje overiť identitu používateľa bez nutnosti ukladať informácie o relácii (session) na serveri.
+
+\textbf{Proces autentifikácie a autorizácie:}
+
+\begin{enumerate}
+  \item \textbf{Prihlásenie:} Používateľ odošle prihlasovacie údaje na \hlcode{/auth/login}. Server overí heslo (pomocou \hlcode{bcrypt} s 10 salt rounds) a ak je správne, vygeneruje podpísaný JWT token.
+  \item \textbf{Payload tokenu:} Token obsahuje zakódované informácie ako \hlcode{userId}, \hlcode{email} a \hlcode{role} (\hlcode{ADMIN} alebo \hlcode{USER}).
+  \item \textbf{Autorizované požiadavky:} Klient ukladá token a posiela ho v hlavičke každého ďalšieho volania: \texttt{Authorization: Bearer \textless token\textgreater}.
+  \item \textbf{Validácia na serveri:} API využíva \hlcamel{JwtAuth}{Guard} na overenie podpisu tokenu a \hlcamel{Roles}{Guard} na kontrolu, či má používateľ dostatočné oprávnenia (napr. prístup do admin panelu).
+\end{enumerate}
+
+\subsubsection{Validácia a transformácia údajov}
+\noindent
+Pre zabezpečenie integrity systému je každá prichádzajúca požiadavka validovaná pomocou DTO (Data Transfer Objects). Využitie globálneho \hlcode{ValidationPipe} v \hlcode{NestJS} zabezpečuje:
+
+\begin{itemize}
+  \item \textbf{Whitelist:} Odstránenie polí, ktoré nie sú definované v DTO, čím sa bráni neoprávneným zmenám v databáze.
+  \item \textbf{Transformácia:} Automatický prevod reťazcov z URL parametrov na číselné typy alebo objekty, čo zjednodušuje prácu v službách (services).
+\end{itemize}
+
+\subsubsection{Spracovanie chýb (Error Handling)}
+\noindent
+API využíva štandardizované HTTP status kódy (napr. \hlcode{400 Bad Request} pre chyby validácie, \hlcode{401 Unauthorized} pre neautorizovaný prístup, \hlcode{403 Forbidden} pre nedostatočné práva a \hlcode{404 Not Found} pre nenájdené zdroje). Systém vracia jednotný formát chybových hlásení vo formáte JSON, čo umožňuje ich ľahšie a konzistentné spracovanie na strane klientskych aplikácií (frontendu).
+
+\noindent
+Tento návrh API a bezpečnosti zaručuje, že platforma je robustná, odolná voči bežným útokom a pripravená na komunikáciu s rôznymi typmi klientskych zariadení.
 
 \section{Metodika a použité technológie}
+\noindent
+Pri vývoji komplexnej inzertnej platformy som zvolil prístup, ktorý kladie dôraz na rýchlosť vývoja, bezpečnosť kódu a jednoduchú údržbu. Celý ekosystém je postavený na moderných JavaScriptových technológiách, ktoré umožňujú zdieľanie logiky medzi serverovou a klientskou časťou.
+
 \subsection{Full-stack vývoj v jazyku TypeScript}
+\noindent
+Základným stavebným kameňom celého projektu je jazyk \emph{TypeScript}. Ide o nadstavbu JavaScriptu, ktorá do dynamického sveta webového vývoja prináša statické typovanie. Pre projekt tohto rozsahu, kde komunikujú tri frontendové aplikácie s jedným API, je použitie TypeScriptu kľúčovým rozhodnutím z niekoľkých dôvodov:
+
+\subsubsection{Typová bezpečnosť a eliminácia chýb}
+\noindent
+TypeScript umožňuje definovať presné štruktúry dát (rozhrania a typy) už počas písania kódu. Vďaka tomu dokáže vývojové prostredie (IDE) okamžite upozorniť na chyby, ktoré by sa v čistom JavaScripte prejavili až počas behu aplikácie (napr. prístup k neexistujúcemu poľu objektu). V projekte sú takto ošetrené všetky kľúčové entity, ako sú inzeráty, používatelia či správy. Zatiaľ čo TypeScript zabezpečuje internú konzistenciu kódu počas vývoja (\emph{compile-time}), v kombinácii s knižnicou \hlcode{class-validator} na backende garantuje, že do systému nevstúpia nevalidné dáta ani z externých HTTP požiadaviek (\emph{runtime}).
+
+\subsubsection{Zdieľanie kódu v monorepe}
+\noindent
+Využitie TypeScriptu v prostredí monorepa mi dovoľuje vytvoriť balík \hlcode{packages/shared}, kde sú definované DTO (\emph{Data Transfer Objects}). Tieto objekty slúžia ako záväzný kontrakt medzi backendom a frontendom.
+
+Keď v \hlcode{api} zmením štruktúru odpovede pre detail inzerátu, TypeScript ma v aplikáciách \hlcode{platform} alebo \hlcode{admin} automaticky upozorní na všetkých miestach, kde je potrebné kód aktualizovať.
+
+Tento mechanizmus zabezpečuje \emph{end-to-end} typovú bezpečnosť, čo dramaticky zvyšuje stabilitu systému pri zmenách v databázovom modeli.
+
+\noindent\textit{Príklad zdieľaného DTO v balíku \hlcode{packages/shared} (využitie tried pre runtime validáciu):}
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[
+  language=Java,
+  basicstyle=\ttfamily\footnotesize,
+  linewidth=\dimexpr\linewidth-1.2em\relax,
+  breaklines=true,
+  breakatwhitespace=true
+]
+import {
+  IsString, IsOptional, IsNumber,
+} from 'class-validator';
+
+export class CreateAdvertisementDto {
+  @IsString()
+  title: string;
+
+  @IsString()
+  description: string;
+
+  @IsOptional()
+  @IsNumber()
+  price?: number;
+
+  // ...
+}
+\end{lstlisting}
+\end{minipage}
+\vspace{0.4\baselineskip}
+\noindent\small\textit{Poznámka: V NestJS sa pre DTO odporúča používať triedy (\texttt{class}) namiesto rozhraní (\texttt{interface}). Dôvodom je, že rozhrania v JavaScripte po kompilácii úplne zmiznú, kým triedy zostávajú zachované aj v \emph{runtime}.}\par
+\noindent\small\textit{To umožňuje knižniciam ako \hlcode{class-validator} alebo Swagger čítať metadáta o typoch polí.}\normalsize
+
+\subsubsection{Lepšia čitateľnosť, dokumentácia a Developer Experience (DX)}
+\noindent
+Kód napísaný v TypeScripte je v podstate „samodokumentovateľný“. Akýkoľvek iný vývojár (alebo administrátor systému) dokáže z definícií typov okamžite pochopiť, aké dáta funkcia prijíma a čo vracajú jednotlivé API endpointy. To je dôležité najmä pri modulárnej architektúre NestJS, kde sú jednotlivé služby a kontroléry jasne definované pomocou dekorátorov a typov.
+
+Zároveň TypeScript výrazne zlepšuje \emph{Developer Experience (DX)} vďaka autokompletizácii (IntelliSense) v moderných IDE (ako je VS Code). Pre vývojára to znamená, že nemusí neustále prepínať okná a pozerať sa do databázovej schémy, pretože mu editor sám našepkáva dostupné polia inzerátu alebo používateľa.
+
+\subsubsection{Moderné funkcie, dekorátory a kompatibilita}
+\noindent
+TypeScript mi umožňuje využívať najnovšie funkcie jazyka ECMAScript (ako asynchrónne funkcie, deštrukturalizáciu či voliteľné reťazenie), ktoré sú následne kompilované do optimalizovaného JavaScriptu. To zaručuje, že aplikácia beží efektívne v prostredí Node.js na serveri aj v moderných webových prehliadačoch.
+
+Keďže backend využíva NestJS, naplno sa tu prejavuje sila TypeScriptu aj cez dekorátory (\hlcode{@Controller}, \hlcode{@Get}, \hlcode{@Injectable}). Tie umožňujú reflexiu metadát, čo je pokročilá funkcia, vďaka ktorej NestJS vie, ako poskladať závislosti (\emph{Dependency Injection}).
+
 \subsection{Backend: Framework NestJS a modulárna architektúra}
+\noindent
+Backendová časť aplikácie (\hlcode{apps/api}) je vyvinutá v prostredí NestJS. Ide o progresívny framework pre Node.js, ktorý využíva TypeScript a kombinuje prvky objektovo orientovaného programovania, funkcionálneho programovania a reaktívneho programovania.
+
+\subsubsection{Modulárna štruktúra a organizácia kódu}
+\noindent
+Hlavnou výhodou NestJS je jeho striktná modulárna architektúra. Každá logická časť platformy je zapuzdrená do samostatného modulu, ktorý obsahuje vlastné kontroléry, služby a dátové modely.
+
+\begin{itemize}
+  \item \textbf{Zapuzdrenie logiky:} Napríklad \hlcode{AdvertisementsModule} sa stará výhradne o inzeráty, zatiaľ čo \hlcode{AuthModule} rieši autentifikáciu. Tieto moduly sú navzájom nezávislé a striktne dodržiavajú princíp jednej zodpovednosti (\emph{Single Responsibility Principle} -- SRP), čo uľahčuje testovanie a umožňuje pridávanie nových funkcií (napr. platobný modul) bez rizika narušenia existujúceho kódu. Všetky tieto doménové moduly sú následne spojené do jedného hlavného stromu aplikácie prostredníctvom koreňového modulu (\hlcode{app.module.ts}).
+  \item \textbf{Dekorátory a metadáta:} NestJS intenzívne využíva dekorátory (napr. \hlcode{@Get()}, \hlcode{@Post()}, \hlcode{@UseGuards()}), ktoré robia kód čitateľnejším a deklaratívnym. Už na prvý pohľad je jasné, ktorý endpoint je verejný a ktorý vyžaduje administrátorské oprávnenia.
+\end{itemize}
+
+\noindent\textit{Príklad použitia dekorátorov v kontroléri (ukážka z \hlcode{AdvertisementsController}):}
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[
+  language=Java,
+  basicstyle=\ttfamily\footnotesize,
+  linewidth=\dimexpr\linewidth-1.2em\relax,
+  breaklines=true,
+  breakatwhitespace=true
+]
+@Controller('advertisements')
+export class AdvertisementsController {
+  constructor(private readonly advertisementsService: AdvertisementsService) {}
+
+  @Get('pending/all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  findPending() {
+    return this.advertisementsService.findPending();
+  }
+}
+\end{lstlisting}
+\end{minipage}
+\vspace{0.4\baselineskip}
+\noindent
+V tejto ukážke je jasne vidieť, ako dekorátory \hlcode{@UseGuards} a \hlcode{@Roles} zabezpečujú ochranu endpointu tak, aby k nemu mal prístup iba administrátor.
+
+\subsubsection{Dependency Injection (Injektovanie závislostí)}
+\noindent
+Framework využíva návrhový vzor \emph{Dependency Injection} (DI), ktorý automatizuje správu inštancií tried.
+
+V praxi to znamená, že ak služba \hlcode{AdsService} potrebuje pristupovať k databáze cez \hlcode{PrismaService}, stačí túto závislosť definovať v konštruktore a NestJS sa postará o jej vytvorenie a prepojenie.
+
+Tento prístup zvyšuje modularitu a umožňuje jednoduchú výmenu komponentov, čo je v súlade s princípmi čistého kódu (\emph{Clean Code}).
+
+\subsubsection{Middleware a Guardy pre bezpečnosť}
+\noindent
+NestJS poskytuje robustný systém na spracovanie životného cyklu požiadavky (\emph{Request Lifecycle}). Každá prichádzajúca HTTP požiadavka prechádza presne definovanou cestou: najprv sa vykoná \emph{Middleware}, následne \emph{Guards} (strážcovia prístupu), \emph{Interceptors} (zachytávače), \emph{Pipes} (validácia a transformácia dát), až sa nakoniec dostane do samotného kontroléra a služby. Tento jasne štruktúrovaný tok umožňuje oddeliť biznis logiku od infraštruktúrnych a bezpečnostných úloh.
+
+\begin{itemize}
+  \item \textbf{Guards (Strážcovia):} Využívam ich na ochranu endpointov. \hlcode{JwtAuthGuard} overuje platnosť tokenu a \hlcode{RolesGuard} kontroluje, či má používateľ rolu \hlcode{ADMIN}.
+  \item \textbf{Interceptors a Pipes:} Tieto nástroje slúžia na transformáciu dát (napr. úprava formátu odpovede) a ich validáciu. Vďaka \hlcode{ValidationPipe} je zaručené, že do systému sa nedostanú nekorektné dáta, ktoré by mohli spôsobiť pád aplikácie alebo bezpečnostnú dieru.
+\end{itemize}
+
+\subsubsection{Integrácia s Prisma ORM}
+\noindent
+NestJS sa výborne dopĺňa s nástrojom Prisma. V projekte som vytvoril dedikovaný \hlcode{PrismaModule}, ktorý spracováva pripojenie k PostgreSQL databáze. Služba \hlcode{PrismaService} priamo rozširuje triedu \hlcode{PrismaClient} a využíva zabudované hooky životného cyklu NestJS, konkrétne \hlcode{onModuleInit}. Vďaka tomu sa spojenie s databázou nadviaže hneď pri štarte aplikácie, čo zaručuje, že API nezačne prijímať požiadavky skôr, než je databáza plne pripravená.
+
+Prisma funguje ako typovo bezpečný most (ORM), ktorý mi umožňuje pracovať s databázou pomocou bežných TypeScript objektov namiesto písania surových SQL dopytov.
+
+Výsledkom je kód, ktorý je menej náchylný na chyby a oveľa rýchlejšie sa vyvíja.
+
 \subsection{Frontend: Next.js (App Router), React a Tailwind CSS}
 \subsection{Perzistencia dát: PostgreSQL a Prisma ORM}
 \subsection{Nástroje pre správu kódu a kontajnerizáciu (Git, Docker Compose)}
@@ -192,7 +707,7 @@
 \section{Testovanie a výsledky}
 \subsection{Overenie funkčnosti API (Swagger dokumentácia)}
 \subsection{Analytika a monitoring (ClickEvent tracking a segmentácia používateľov)}
-\subsection{Vyhodnotenie pou\v{z}\'ivate\v{l}sk\'eho rozhrania a responzivity}
+\subsection{Vyhodnotenie používateľského rozhrania a responzivity}
 
 \section{Diskusia a prínosy práce}
 \subsection{Správa obsahu bez nutnosti redeployu (SiteMenu, SiteConfig)}
@@ -201,6 +716,8 @@
 \section{Záver}
 \subsection{Zhrnutie dosiahnutých výsledkov}
 \subsection{Naplnenie stanovených cieľov}
+
+\par
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,70 @@
+% Tok zápisu: Controller → Service → Prisma → PostgreSQL (vertikálne)
+\begin{tikzpicture}[
+  font=\sffamily\small,
+  line cap=round,
+  line join=round,
+  >=Stealth,
+  layer/.style={
+    rectangle,
+    rounded corners=6pt,
+    minimum width=4.85cm,
+    minimum height=1.55cm,
+    align=center,
+    inner sep=8pt,
+    line width=0.6pt,
+    draw=teal!48!black!85,
+    fill=white,
+    drop shadow={
+      shadow xshift=0.4pt,
+      shadow yshift=-0.8pt,
+      opacity=0.14,
+      fill=black
+    }
+  },
+  dblayer/.style={
+    layer,
+    fill=blue!3!white,
+    draw=blue!32!black!55
+  },
+  arr/.style={
+    ->,
+    line width=0.85pt,
+    draw=black!38,
+    shorten >=2pt,
+    shorten <=2pt
+  },
+  lbl/.style={
+    font=\sffamily\footnotesize,
+    text=black!55,
+    fill=white,
+    inner sep=2pt
+  }
+]
+
+\begin{scope}[on background layer]
+  \fill[blue!1!gray!1, rounded corners=8pt]
+    (-0.6, 1.0) rectangle (5.1, -8.55);
+\end{scope}
+
+\node[layer] (C) at (2.25, 0.2) {%
+  {\bfseries\sffamily Kontrolér}\\[4pt]
+  {\small\ttfamily\begin{tabular}{@{}c@{}}Advertisements\\Controller\end{tabular}}%
+};
+\node[layer] (S) at (2.25, -2.35) {%
+  {\bfseries\sffamily Služba}\\[4pt]
+  {\small\ttfamily\begin{tabular}{@{}c@{}}Advertisements\\Service\end{tabular}}%
+};
+\node[layer] (P) at (2.25, -4.9) {%
+  {\bfseries\sffamily ORM}\\[4pt]
+  {\small\ttfamily\begin{tabular}{@{}c@{}}Prisma\\ORM\end{tabular}}%
+};
+\node[dblayer] (D) at (2.25, -7.45) {%
+  {\bfseries\sffamily Databáza}\\[4pt]
+  {\small\ttfamily PostgreSQL}%
+};
+
+\draw[arr] (C.south) -- node[lbl, right=3pt, pos=0.5] {delegácia} (S.north);
+\draw[arr] (S.south) -- node[lbl, right=3pt, pos=0.5] {business logika} (P.north);
+\draw[arr] (P.south) -- node[lbl, right=3pt, pos=0.5] {asynchrónny zápis} (D.north);
+
+\end{tikzpicture}

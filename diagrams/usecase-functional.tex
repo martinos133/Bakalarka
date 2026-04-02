@@ -1,0 +1,127 @@
+% Diagram použitia (Use Case) — funkčné požiadavky (sekcia 3.1)
+% Vizuál: UML panáci, jemné tiene, ortogonálne asociácie
+\begin{tikzpicture}[
+  font=\sffamily\small,
+  >=Stealth,
+  line cap=round,
+  line join=round,
+  % Karta aktéra (UML štýl)
+  actorcard/.style={
+    rectangle,
+    rounded corners=5pt,
+    minimum width=1.85cm,
+    minimum height=2.05cm,
+    inner sep=5pt,
+    align=center,
+    fill=blue!3!white,
+    draw=blue!28!black!35,
+    line width=0.45pt
+  },
+  % Prípad použitia
+  usecase/.style={
+    ellipse,
+    draw=teal!45!black!80,
+    line width=0.55pt,
+    fill=white,
+    minimum width=3.05cm,
+    minimum height=1.05cm,
+    align=center,
+    inner sep=4pt,
+    drop shadow={
+      shadow xshift=0.35pt,
+      shadow yshift=-0.85pt,
+      opacity=0.14,
+      fill=black
+    }
+  },
+  % Asociácia aktér–prípad (UML: plná čiara, bez šípky)
+  assoc/.style={
+    draw=black!35,
+    line width=0.7pt,
+    rounded corners=2pt
+  },
+  % Zovšeobecnenie medzi aktérmi
+  gen/.style={
+    draw=black!48,
+    line width=0.75pt,
+    -{Triangle[open, length=4.2mm, width=5mm]}
+  }
+]
+
+% --- Panák (opakovateľná kresba cez scope posun)
+\newcommand{\umlstick}{%
+  \begin{scope}[line width=0.68pt, draw=black!68]
+    \draw (0,0.56) circle (0.135);
+    \draw (0,0.425) -- (0,-0.06);
+    \draw (-0.2,0.17) -- (0.2,0.17);
+    \draw (0,-0.06) -- (-0.16,-0.44);
+    \draw (0,-0.06) -- (0.16,-0.44);
+  \end{scope}%
+}
+
+% --- Aktéri
+\node[actorcard] (A1) at (-2.45, 6.35) {%
+  \begin{tikzpicture}[baseline=-0.58cm]
+    \umlstick
+  \end{tikzpicture}\\[-1pt]
+  {\footnotesize\bfseries\sffamily\color{black!80} Návštevník}
+};
+\node[actorcard] (A2) at (-2.45, 3.55) {%
+  \begin{tikzpicture}[baseline=-0.58cm]
+    \umlstick
+  \end{tikzpicture}\\[-1pt]
+  {\footnotesize\bfseries\sffamily\color{black!80} Používateľ}
+};
+\node[actorcard] (A3) at (-2.45, 0.35) {%
+  \begin{tikzpicture}[baseline=-0.58cm]
+    \umlstick
+  \end{tikzpicture}\\[-1pt]
+  {\footnotesize\bfseries\sffamily\color{black!80} Administrátor}
+};
+
+% Zovšeobecnenie Používateľ → Návštevník
+\draw[gen] (A2.north) -- (A1.south);
+
+% --- Prípady použitia (mriežka)
+\node[usecase] (U1) at (2.15, 6.55) {Prehliadať\\[-1pt]inzeráty};
+\node[usecase] (U2) at (2.15, 4.45) {Hľadať na\\[-1pt]mape};
+\node[usecase] (U3) at (2.15, 2.35) {Registrovať sa};
+
+\node[usecase] (U4) at (7.05, 6.55) {Pridať\\[-1pt]inzerát};
+\node[usecase] (U5) at (7.05, 4.45) {Poslať správu};
+\node[usecase] (U6) at (7.05, 2.35) {Spravovať\\[-1pt]profil};
+
+\node[usecase] (U7) at (4.55, 0.55) {Schvaľovať\\[-1pt]inzeráty};
+\node[usecase] (U8) at (4.55, -1.05) {Banovať\\[-1pt]používateľov};
+\node[usecase] (U9) at (4.55, -2.65) {Spravovať\\[-1pt]kategórie};
+
+% Hranica systému
+\begin{scope}[on background layer]
+  \node[
+    fill=blue!1!gray!2,
+    draw=blue!32!black!45,
+    line width=0.85pt,
+    dashed,
+    dash pattern=on 4.2pt off 3.4pt,
+    rounded corners=8pt,
+    inner sep=20pt,
+    fit=(U1)(U2)(U3)(U4)(U5)(U6)(U7)(U8)(U9),
+    label={[yshift=4pt, text=black!72]above:{\bfseries\sffamily\normalsize Systém inzertnej platformy}}
+  ] {};
+\end{scope}
+
+% Ortogonálne asociácie (predĺženie z pravého okraja karty)
+\newcommand{\actorOut}[2]{($(#1.east)+(0.12,0)$) -- ++(0.28,0) |- (#2.west)}
+\draw[assoc] \actorOut{A1}{U1};
+\draw[assoc] \actorOut{A1}{U2};
+\draw[assoc] \actorOut{A1}{U3};
+
+\draw[assoc] \actorOut{A2}{U4};
+\draw[assoc] \actorOut{A2}{U5};
+\draw[assoc] \actorOut{A2}{U6};
+
+\draw[assoc] \actorOut{A3}{U7};
+\draw[assoc] \actorOut{A3}{U8};
+\draw[assoc] \actorOut{A3}{U9};
+
+\end{tikzpicture}
