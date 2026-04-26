@@ -30,6 +30,18 @@
 \usepackage{lmodern} % Vector fonts (fixes blurry PK bitmap fonts)
 \usepackage{microtype} % Better kerning/protrusion (improves readability)
 
+% Aby každá hlavná kapitola (\section) začínala na novej strane (article nemá \chapter)
+\usepackage{xparse}
+\let\origsection\section
+\RenewDocumentCommand{\section}{s o m}{%
+  \clearpage
+  \IfBooleanTF{#1}{%
+    \IfNoValueTF{#2}{\origsection*{#3}}{\origsection*[#2]{#3}}%
+  }{%
+    \IfNoValueTF{#2}{\origsection{#3}}{\origsection[#2]{#3}}%
+  }%
+}
+
 % Optional packages
 \usepackage{listings}% Code blocks with syntax highlighting:
 % PDF hyperlinks (klikateľné odkazy v PDF)
