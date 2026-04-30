@@ -1,31 +1,68 @@
-% Set Acronym style
-\newacronymstyle{single-table}
+% ============================================================
+%  Zoznam skratiek a značiek
+%  Čistý booktabs štýl — skratka | plný názov
+% ============================================================
+
+% Redefinujeme výstup glossaries tak, aby vyzeralo ako profesionálna tabuľka
+\newacronymstyle{clean-table}
 {%
-    \GlsUseAcrEntryDispStyle{long-short}%
+  \GlsUseAcrEntryDispStyle{long-short}%
 }
 {%
-    %\renewcommand*{\glossarysection}[2][]{}%
-    \renewcommand{\glossentry}[2]{%
-        \textbf{\glsentryshort{##1}} & \glsentrylong{##1} \newline \glsentrydesc{##1} \tabularnewline[3em]  % Spacing between entries
-    }%
-    \renewcommand{\glsgroupheading}[1]{}%
-    \renewcommand{\glsgroupskip}{}%
-    \renewenvironment{theglossary}%
-    {\begin{longtable}{@{}p{0.15\linewidth}p{0.85\linewidth}@{}}}%
-    {\end{longtable}\pagebreak}%
+  \renewcommand{\glsgroupheading}[1]{}%
+  \renewcommand{\glsgroupskip}{}%
+  \renewcommand{\glossentry}[2]{%
+    \glsentryshort{##1} & \glsentrylong{##1} \\[2pt]%
+  }%
+  \renewenvironment{theglossary}%
+  {%
+    \setlength{\tabcolsep}{10pt}%
+    \renewcommand{\arraystretch}{1.45}%
+    \begin{longtable}{@{}
+        >{\bfseries\sffamily}p{0.14\linewidth}
+        p{0.82\linewidth}@{}}
+    \toprule
+    \rowcolor{gray!12}
+    \textbf{Skratka} & \textbf{Plný názov} \\
+    \midrule
+    \endhead
+    \bottomrule
+    \endfoot
+  }%
+  {\end{longtable}}%
 }
-\setacronymstyle{single-table}
+\setacronymstyle{clean-table}
 
-% Define Acronyms with description
+% ── Skratky — abecedne ──────────────────────────────────────────────────────
 
-\newacronym
-[description={Univerzálny jazyk pre vizuálne modelovanie systémov}]
-{UML}{UML}{Unified Modeling Language}
-
-\newacronym
-[description={Jazyk pre špecifikáciu obmedzení, dotazov a vyhľadávacích operácií v UML}]
-{OCL}{OCL}{Object Constraint Language}
-
-\newacronym
-[description={Notácia pre modelovanie business procesov}]
-{BPMN}{BPMN}{Business Process Model and Notation}
+\newacronym{ACID}{ACID}{Atomicity, Consistency, Isolation, Durability}
+\newacronym{API}{API}{Application Programming Interface}
+\newacronym{CMS}{CMS}{Content Management System}
+\newacronym{CORS}{CORS}{Cross-Origin Resource Sharing}
+\newacronym{CSS}{CSS}{Cascading Style Sheets}
+\newacronym{CRUD}{CRUD}{Create, Read, Update, Delete}
+\newacronym{DI}{DI}{Dependency Injection}
+\newacronym{DTO}{DTO}{Data Transfer Object}
+\newacronym{ERD}{ERD}{Entity-Relationship Diagram}
+\newacronym{GPS}{GPS}{Global Positioning System}
+\newacronym{HTML}{HTML}{Hypertext Markup Language}
+\newacronym{HTTP}{HTTP}{Hypertext Transfer Protocol}
+\newacronym{HTTPS}{HTTPS}{Hypertext Transfer Protocol Secure}
+\newacronym{JSON}{JSON}{JavaScript Object Notation}
+\newacronym{JSONB}{JSONB}{JSON Binary (PostgreSQL)}
+\newacronym{JS}{JS}{JavaScript}
+\newacronym{JWT}{JWT}{JSON Web Token}
+\newacronym{MVC}{MVC}{Model-View-Controller}
+\newacronym{ORM}{ORM}{Object-Relational Mapping}
+\newacronym{P2P}{P2P}{Peer-to-Peer}
+\newacronym{REST}{REST}{Representational State Transfer}
+\newacronym{RSC}{RSC}{React Server Components}
+\newacronym{SEO}{SEO}{Search Engine Optimization}
+\newacronym{SQL}{SQL}{Structured Query Language}
+\newacronym{SRP}{SRP}{Single Responsibility Principle}
+\newacronym{SSR}{SSR}{Server-Side Rendering}
+\newacronym{TS}{TS}{TypeScript}
+\newacronym{UML}{UML}{Unified Modeling Language}
+\newacronym{URL}{URL}{Uniform Resource Locator}
+\newacronym{UUID}{UUID}{Universally Unique Identifier}
+\newacronym{XSS}{XSS}{Cross-Site Scripting}
