@@ -5,6 +5,7 @@
 \usepackage[main=slovak,english,provide=*]{babel}
 \usepackage{setspace}
 \usepackage{pdfpages}
+% pdflscape odstránený — ERD je v portrait orientácii
 % Times New Roman-like font (Times Roman z psnfss)
 \usepackage{mathptmx} % Times-like serif font (matches reference PDF)
 \usepackage[a4paper, left=3.5cm, right=2cm, top=2.5cm, bottom=2.5cm]{geometry} % Margins
@@ -28,26 +29,8 @@
 % lmodern odstránený – kolidoval by s Times (mathptmx) fontom z reference
 \usepackage{microtype} % Better kerning/protrusion (improves readability)
 
-% Každá hlavná kapitola (\section) začína na novej strane; nadpisy v UPPERCASE
-% (podľa referenčnej predlohy: "1 ÚVOD", "1.1 SYSTÉM KVALITY")
+% UPPERCASE + clearpage wrappery sa aplikujú nižšie po \renewcommand{\section}
 \usepackage{xparse}
-\let\origsection\section
-\RenewDocumentCommand{\section}{s o m}{%
-  \clearpage\phantomsection
-  \IfBooleanTF{#1}{%
-    \IfNoValueTF{#2}{\origsection*{\MakeUppercase{#3}}}{\origsection*[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
-  }{%
-    \IfNoValueTF{#2}{\origsection{\MakeUppercase{#3}}}{\origsection[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
-  }%
-}
-\let\origsubsection\subsection
-\RenewDocumentCommand{\subsection}{s o m}{%
-  \IfBooleanTF{#1}{%
-    \IfNoValueTF{#2}{\origsubsection*{\MakeUppercase{#3}}}{\origsubsection*[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
-  }{%
-    \IfNoValueTF{#2}{\origsubsection{\MakeUppercase{#3}}}{\origsubsection[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
-  }%
-}
 
 % Optional packages
 \usepackage{listings}% Code blocks with syntax highlighting:
@@ -135,8 +118,49 @@
 \addbibresource{essentials/bibliography.bib}
 
 % Formatting commands
-\onehalfspacing % 1.5 line spacing
+\onehalfspacing % 1.5 line spacing (podľa štandardov záverečných prác)
+\setlength{\parindent}{1.25cm}    % odsadenie prvého riadku odseku (podľa predlohy)
+\setlength{\parskip}{0pt}         % žiadna medzera medzi odsekmi (predloha)
 \emergencystretch=2em  % dovolí LaTeXu mierne roztiahnuť medzery pred vyhlásením Overfull
+
+% Veľkosti nadpisov ako v predlohe (jemne menšie než default article class)
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{\z@}%
+  {-3.5ex \@plus -1ex \@minus -.2ex}%
+  {2.3ex \@plus.2ex}%
+  {\normalfont\large\bfseries}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}%
+  {1.5ex \@plus .2ex}%
+  {\normalfont\normalsize\bfseries}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}%
+  {1.5ex \@plus .2ex}%
+  {\normalfont\normalsize\bfseries}}
+\makeatother
+
+% Po refaktoringu \section/\subsection treba znova aplikovať UPPERCASE wrapper
+% pre sekciu, subsekciu (predloha má 1 ÚVOD, 1.1 SYSTÉM KVALITY)
+\let\origsection\section
+\RenewDocumentCommand{\section}{s o m}{%
+  \clearpage\phantomsection
+  \IfBooleanTF{#1}{%
+    \IfNoValueTF{#2}{\origsection*{\MakeUppercase{#3}}}{\origsection*[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
+  }{%
+    \IfNoValueTF{#2}{\origsection{\MakeUppercase{#3}}}{\origsection[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
+  }%
+}
+\let\origsubsection\subsection
+\RenewDocumentCommand{\subsection}{s o m}{%
+  \IfBooleanTF{#1}{%
+    \IfNoValueTF{#2}{\origsubsection*{\MakeUppercase{#3}}}{\origsubsection*[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
+  }{%
+    \IfNoValueTF{#2}{\origsubsection{\MakeUppercase{#3}}}{\origsubsection[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
+  }%
+}
+
+% Po nadpise sa NEMÁ resetovať odsadenie (predloha má odsadené aj prvé odseky)
+\usepackage{indentfirst}
 %
 \pagestyle{fancy}
 \fancyhead{}
@@ -223,6 +247,52 @@
     backgroundcolor=\color{gray!10},     % Light gray background (10% gray)
     frame=single,                        % Adds a single frame around the code
     framesep=5pt                         % Space between frame and code
+}
+
+% Prisma schema language (PostgreSQL ORM DSL)
+\lstdefinelanguage{Prisma}{%
+  morekeywords={generator, datasource, model, enum, type, view},
+  morekeywords=[2]{String, Int, Float, Boolean, DateTime, Json, Bytes, Decimal, BigInt},
+  morekeywords=[3]{true, false, null},
+  keywordstyle=\color{blue!70!black}\bfseries,
+  keywordstyle=[2]\color{teal!60!black}\bfseries,
+  keywordstyle=[3]\color{orange!80!black}\bfseries,
+  sensitive=true,
+  comment=[l]{//},
+  morecomment=[l]{///},
+  morestring=[b]",
+  basicstyle=\ttfamily\footnotesize,
+  commentstyle=\color{gray!70!black}\itshape,
+  stringstyle=\color{red!60!black},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  backgroundcolor=\color{gray!7},
+  frame=single,
+  framesep=5pt,
+  framerule=0.3pt,
+  rulecolor=\color{gray!40},
+  breaklines=true,
+  breakatwhitespace=true,
+  showstringspaces=false,
+  tabsize=2,
+  literate=%
+    {á}{{\'a}}1 {Á}{{\'A}}1
+    {ä}{{\"a}}1 {Ä}{{\"A}}1
+    {č}{{\v{c}}}1 {Č}{{\v{C}}}1
+    {ď}{{\v{d}}}1 {Ď}{{\v{D}}}1
+    {é}{{\'e}}1 {É}{{\'E}}1
+    {í}{{\'i}}1 {Í}{{\'I}}1
+    {ľ}{{\v{l}}}1 {Ľ}{{\v{L}}}1
+    {ň}{{\v{n}}}1 {Ň}{{\v{N}}}1
+    {ó}{{\'o}}1 {Ó}{{\'O}}1
+    {ô}{{\^o}}1 {Ô}{{\^O}}1
+    {ŕ}{{\'r}}1 {Ŕ}{{\'R}}1
+    {š}{{\v{s}}}1 {Š}{{\v{S}}}1
+    {ť}{{\v{t}}}1 {Ť}{{\v{T}}}1
+    {ú}{{\'u}}1 {Ú}{{\'U}}1
+    {ý}{{\'y}}1 {Ý}{{\'Y}}1
+    {ž}{{\v{z}}}1 {Ž}{{\v{Z}}}1
 }
 
 % TSX / React: syntax + zvýraznenie farieb v Tailwind triedach (hex, primary, \dots)
@@ -672,15 +742,32 @@ Logický model databázy pozostáva z niekoľkých kľúčových entít, ktoré 
 
 \subsubsection{Entitno-relačný diagram (ERD)}
 \noindent
-ER diagram vizualizuje prepojenia medzi týmito entitami.
+Logický model databázy som vytvoril v deklaratívnom jazyku Prisma (\hlcode{schema.prisma}), z ktorého následne vyplýva fyzická schéma v PostgreSQL. Obrázok~\ref{fig:erd-database} zobrazuje úplný entitno-relačný diagram so všetkými hlavnými tabuľkami, kľúčmi (PK, FK, UQ) a kardinalitou jednotlivých relácií. Jadrové entity (\hlcode{User}, \hlcode{Advertisement}, \hlcode{Category}) sú vizuálne odlíšené modrastou farbou, podporné a doménové tabuľky sú zobrazené v zelenom (teal) prevedení.
+
+\begin{figure}[p]
+\centering
+\resizebox{\textwidth}{!}{\input{diagrams/erd-database.tex}}
+\caption{Entitno-relačný diagram (ERD) databázy -- jadrové entity, podporné tabuľky a ich relácie}
+\label{fig:erd-database}
+\end{figure}
+
+\noindent
+Vybrané charakteristické relácie:
 
 \begin{itemize}
-  \item Relácia medzi \hlcode{User} a \hlcode{Advertisement} je typu \textbf{1:N}, keďže jeden používateľ môže vytvoriť viacero inzerátov, ale inzerát patrí vždy jednému autorovi.
-  \item Podobne \hlcode{Category} a \hlcode{Advertisement} tvoria vzťah \textbf{1:N}, kde každá kategória zastrešuje množinu prislúchajúcich ponúk.
-  \item Entita \hlcode{Category} má definovanú \textbf{unárnu reláciu 1:N} sama na seba (cez \hlcode{parentId}), čím sa vytvára stromová štruktúra (hlavné kategórie a podkategórie).
-  \item Entita \hlcode{Favorite} predstavuje klasickú dekompozíciu vzťahu \textbf{M:N} medzi používateľom a inzerátom.
-  \item Entita \hlcode{Payment} prepája inzerát s dvoma používateľmi (vlastníkom a platcom), čo vytvára komplexnejšiu sieť vzťahov nad tabuľkou používateľov.
+  \item Relácia medzi \hlcode{User} a \hlcode{Advertisement} je typu \textbf{1:N} -- jeden používateľ môže vytvoriť viacero inzerátov, no inzerát patrí vždy jednému autorovi.
+  \item \hlcode{Category} a \hlcode{Advertisement} tvoria vzťah \textbf{1:N}, kde každá kategória zastrešuje množinu inzerátov.
+  \item \hlcode{Category} obsahuje aj \textbf{unárnu reláciu 1:N} sama na seba (cez \hlcode{parentId}), čím vzniká stromová štruktúra hlavných a podriadených kategórií.
+  \item \hlcode{Filter} je viazaný na konkrétnu kategóriu (1:N) a definuje dynamické vlastnosti inzerátov v tejto kategórii.
+  \item \hlcode{Favorite} predstavuje klasickú dekompozíciu vzťahu \textbf{M:N} medzi používateľom a inzerátom.
+  \item \hlcode{Payment} prepája inzerát s dvoma používateľmi (\hlcode{renter} a \hlcode{owner}), čo vytvára komplexnejšiu sieť vzťahov nad tabuľkou používateľov.
+  \item \hlcode{Message} obsahuje vlastnú \textbf{unárnu reláciu} (\hlcode{parentId} $\to$ \hlcode{replies}), ktorá umožňuje hierarchické zoraďovanie odpovedí do vlákien konverzácií.
+  \item \hlcode{TeamConversation} viaže vždy dvoch používateľov cez polia \hlcode{participantA} a \hlcode{participantB} (dve nezávislé 1:N relácie), pričom unikátnym obmedzením je zaručené, že medzi dvoma účastníkmi existuje vždy najviac jedna konverzácia.
+  \item \hlcode{PlatformTestimonial} má voči \hlcode{User} reláciu \textbf{1:1} -- jeden používateľ môže mať najviac jednu verejnú referenciu zobrazenú na homepage.
 \end{itemize}
+
+\noindent
+Anotácie \hlcode{@@index} v Prisma schéme explicitne deklarujú indexy nad poliami, ktoré sa najčastejšie objavujú v podmienkach \hlcode{WHERE} (\hlcode{status}, \hlcode{slug}, \hlcode{categoryId}, \hlcode{userId}, \hlcode{createdAt}), čím sa zaručuje predvídateľný výkon dopytov aj pri raste objemu dát. Klauzuly \hlcode{onDelete: Cascade} a \hlcode{onDelete: SetNull} explicitne riadia referenčnú integritu na úrovni databázy -- odstránenie agregátneho koreňa (napr. používateľa) automaticky odstráni alebo zneplatní viazané záznamy bez nutnosti špeciálnej aplikačnej logiky.
 
 \subsection[REST API a JWT]{Návrh REST API rozhrania a autentifikačného mechanizmu (JWT)}
 \noindent

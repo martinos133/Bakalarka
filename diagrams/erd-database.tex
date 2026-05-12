@@ -1,0 +1,282 @@
+% Entitno-relačný diagram (ERD) databázy RentMe - portrait, 2 stĺpce
+\begin{tikzpicture}[
+  font=\rmfamily\scriptsize,
+  line cap=round, line join=round,
+  >=Stealth,
+  entity/.style={
+    rectangle, rounded corners=3pt,
+    minimum width=4.2cm,
+    align=left, inner sep=0pt,
+    line width=0.5pt,
+    draw=teal!50!black!80, fill=white
+  },
+  centralent/.style={
+    entity,
+    draw=blue!40!black!65, fill=blue!4!white
+  },
+  rel/.style={line width=0.55pt, draw=black!55, shorten >=1pt, shorten <=1pt, ->},
+  selfrel/.style={rel, dashed},
+  cardlbl/.style={font=\rmfamily\tiny, fill=white, inner sep=1pt, text=black!70}
+]
+
+% ========================================================================
+% Mriežka 2 stĺpce × 6 riadkov: každá entita má svoju absolútnu pozíciu.
+% Ľavý stĺpec x = 0, pravý stĺpec x = 6.5
+% Riadky: y = 0, -3.2, -6.0, -8.8, -11.6, -14.4
+% ========================================================================
+
+% ─── RIADOK 1: User | Advertisement ─────────────────────────────────────
+\node[centralent] (U) at (0, 0) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{blue!45!black!75}{\parbox{4.15cm}{\centering\color{white}\bfseries User}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{UQ} & email \\
+        & password \\
+        & firstName, lastName \\
+        & role : UserRole \\
+        & sellerPlan : SellerPlan \\
+        & isCompany, IČO, DIČ \\
+        & banned, bannedUntil, banReason \\
+        & createdAt, updatedAt \\
+  \end{tabular}
+};
+
+\node[centralent] (A) at (6.5, 0) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{blue!45!black!75}{\parbox{4.15cm}{\centering\color{white}\bfseries Advertisement}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{FK} & userId \\
+    \textbf{FK} & categoryId \\
+        & title, description, price \\
+        & type (SERVICE/RENTAL) \\
+        & status : AdStatus \\
+        & latitude, longitude \\
+        & specifications : Json \\
+        & priorityBoosted \\
+  \end{tabular}
+};
+
+% ─── RIADOK 2: Favorite | Category ──────────────────────────────────────
+\node[entity] (Fav) at (0, -3.6) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{teal!55!black!80}{\parbox{4.15cm}{\centering\color{white}\bfseries Favorite}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{FK} & userId \\
+    \textbf{FK} & advertisementId \\
+        & createdAt \\
+  \end{tabular}
+};
+
+\node[centralent] (C) at (6.5, -3.6) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{blue!45!black!75}{\parbox{4.15cm}{\centering\color{white}\bfseries Category}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{UQ} & slug \\
+    \textbf{FK} & parentId (self) \\
+        & name, description \\
+        & status, order \\
+        & metaTitle, metaDescription \\
+        & icon, image, banner \\
+  \end{tabular}
+};
+
+% ─── RIADOK 3: Payment | Filter ─────────────────────────────────────────
+\node[entity] (P) at (0, -7.4) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{teal!55!black!80}{\parbox{4.15cm}{\centering\color{white}\bfseries Payment}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{FK} & advertisementId \\
+    \textbf{FK} & renterId, ownerId \\
+        & amount, status \\
+        & startDate, endDate \\
+  \end{tabular}
+};
+
+\node[entity] (F) at (6.5, -7.4) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{teal!55!black!80}{\parbox{4.15cm}{\centering\color{white}\bfseries Filter}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{FK} & categoryId \\
+        & name, slug \\
+        & type : FilterType \\
+        & options : String[] \\
+        & isRequired, isActive \\
+  \end{tabular}
+};
+
+% ─── RIADOK 4: Review | Report ──────────────────────────────────────────
+\node[entity] (R) at (0, -10.8) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{teal!55!black!80}{\parbox{4.15cm}{\centering\color{white}\bfseries Review}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{FK} & advertisementId \\
+    \textbf{FK} & authorId \\
+        & rating, comment \\
+        & ownerReply, ownerReplyAt \\
+  \end{tabular}
+};
+
+\node[entity] (Rep) at (6.5, -10.8) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{teal!55!black!80}{\parbox{4.15cm}{\centering\color{white}\bfseries Report}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{FK} & advertisementId \\
+    \textbf{FK} & reporterId \\
+        & reason, status \\
+        & resolvedBy, resolvedAt \\
+  \end{tabular}
+};
+
+% ─── RIADOK 5: Message | TeamConversation ───────────────────────────────
+\node[entity] (M) at (0, -14.2) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{teal!55!black!80}{\parbox{4.15cm}{\centering\color{white}\bfseries Message}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{FK} & senderId, recipientId \\
+    \textbf{FK} & advertisementId \\
+    \textbf{FK} & parentId (self) \\
+        & type, status \\
+        & subject, content \\
+  \end{tabular}
+};
+
+\node[entity] (TC) at (6.5, -14.2) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{teal!55!black!80}{\parbox{4.15cm}{\centering\color{white}\bfseries TeamConversation}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{FK} & participantA \\
+    \textbf{FK} & participantB \\
+        & lastMessageAt \\
+  \end{tabular}
+};
+
+% ─── RIADOK 6: CalendarEvent | TeamMessage | PlatformTestimonial ───────
+\node[entity] (CE) at (0, -17.5) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{teal!55!black!80}{\parbox{4.15cm}{\centering\color{white}\bfseries CalendarEvent}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{FK} & userId \\
+        & title, date, endDate \\
+        & type, color, completed \\
+  \end{tabular}
+};
+
+\node[entity] (TM) at (6.5, -17.5) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{teal!55!black!80}{\parbox{4.15cm}{\centering\color{white}\bfseries TeamMessage}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{FK} & conversationId \\
+    \textbf{FK} & senderId \\
+        & content, attachments \\
+        & readAt \\
+  \end{tabular}
+};
+
+\node[entity] (PT) at (0, -20.5) {%
+  \begin{tabular}{@{\hspace{4pt}}p{0.55cm}p{3.3cm}@{\hspace{4pt}}}
+    \multicolumn{2}{@{}l@{}}{\colorbox{teal!55!black!80}{\parbox{4.15cm}{\centering\color{white}\bfseries PlatformTestimonial}}}\\[1pt]
+    \textbf{PK} & id : uuid \\
+    \textbf{UQ,FK} & userId \\
+        & rating, comment \\
+        & roleLabel, approved \\
+  \end{tabular}
+};
+
+% ========================================================================
+% Vzťahy
+% ========================================================================
+% User 1 ──── N Advertisement (vodorovne v R1)
+\draw[rel] (U.east) -- node[cardlbl, above, pos=0.2] {1} node[cardlbl, above, pos=0.8] {N} (A.west);
+
+% Advertisement N ──── 1 Category (vodorovne na pravom stĺpci R1->R2)
+\draw[rel] (A.south) -- node[cardlbl, right, pos=0.5] {N:1} (C.north);
+
+% Category 1 ──── N Filter (R2->R3)
+\draw[rel] (C.south) -- node[cardlbl, right, pos=0.5] {1:N} (F.north);
+
+% Category self-loop (parent/child)
+\draw[selfrel] (C.east) .. controls ($(C.east)+(1.6,0.3)$) and ($(C.east)+(1.6,-0.3)$) ..
+  node[cardlbl, right, pos=0.5] {parent 1:N} ($(C.east)+(0,-0.05)$);
+
+% User 1 ──── N Favorite (vertikálne ľavý stĺpec)
+\draw[rel] (U.south) -- node[cardlbl, right, pos=0.5] {1:N} (Fav.north);
+
+% Advertisement ──── Favorite (diagonála)
+\draw[rel] (A.west) .. controls ($(A.west)+(-1.0,0)$) and ($(Fav.north east)+(0.3,0.5)$) ..
+  node[cardlbl, pos=0.85] {1:N} (Fav.north east);
+
+% Favorite ──── Payment (vertikálne, ľavý stĺpec)
+\draw[rel] (Fav.south) -- node[cardlbl, right, pos=0.5] {} (P.north);
+
+% Advertisement ──── Payment (diagonála)
+\draw[rel] (A.west) .. controls ($(A.west)+(-1.3,-1)$) and ($(P.north east)+(0.3,1)$) ..
+  node[cardlbl, pos=0.85] {1:N} (P.north east);
+
+% User ──── Payment (renter, owner)
+\draw[rel] (U.south) .. controls ($(U.south)+(-0.5,-2)$) and ($(P.west)+(-0.5,0.5)$) ..
+  node[cardlbl, pos=0.5, sloped, above] {renter, owner} (P.west);
+
+% Advertisement ──── Review
+\draw[rel] (A.south) .. controls ($(A.south)+(0,-3)$) and ($(R.north east)+(0.5,1)$) ..
+  node[cardlbl, pos=0.85] {1:N} (R.north east);
+
+% User ──── Review (author)
+\draw[rel] (U.south) .. controls ($(U.south)+(-0.8,-5)$) and ($(R.north west)+(-0.3,1)$) ..
+  node[cardlbl, pos=0.85, sloped] {author} (R.north west);
+
+% Advertisement ──── Report
+\draw[rel] (A.east) .. controls ($(A.east)+(1.5,-3)$) and ($(Rep.east)+(1.5,1)$) ..
+  node[cardlbl, pos=0.85] {1:N} (Rep.east);
+
+% User ──── Report (reporter) - z User dole cez ľavý okraj
+\draw[rel] (R.east) -- node[cardlbl, above, pos=0.5] {reporter 1:N} (Rep.west);
+
+% User ──── Message (sender/recipient)
+\draw[rel] (U.south) .. controls ($(U.south)+(-1,-6)$) and ($(M.north west)+(-0.3,1)$) ..
+  node[cardlbl, pos=0.85, sloped] {sender, recipient} (M.north west);
+
+% Advertisement ──── Message
+\draw[rel] (R.south) -- node[cardlbl, right, pos=0.5] {} (M.north);
+
+% Message self-loop (parent/replies)
+\draw[selfrel] (M.west) .. controls ($(M.west)+(-1.6,0.3)$) and ($(M.west)+(-1.6,-0.3)$) ..
+  node[cardlbl, left, pos=0.5] {parent 1:N} ($(M.west)+(0,-0.05)$);
+
+% User ──── TeamConversation (A, B - 2× FK)
+\draw[rel] (A.east) .. controls ($(A.east)+(2,-5)$) and ($(TC.east)+(1.5,2)$) ..
+  node[cardlbl, pos=0.85] {A, B} (TC.east);
+
+% TeamConversation ──── TeamMessage (vertikálne)
+\draw[rel] (TC.south) -- node[cardlbl, right, pos=0.5] {1:N} (TM.north);
+
+% TeamMessage ──── User (sender) - dlhý oblúk
+\draw[rel] (TM.east) .. controls ($(TM.east)+(2,2)$) and ($(U.east)+(3,-15)$) ..
+  node[cardlbl, pos=0.95] {sender} (U.east);
+
+% CalendarEvent ──── User
+\draw[rel] (CE.west) .. controls ($(CE.west)+(-1.5,5)$) and ($(U.west)+(-2,-2)$) ..
+  node[cardlbl, pos=0.95] {N:1} (U.west);
+
+% PlatformTestimonial ──── User (1:1)
+\draw[rel] (PT.west) .. controls ($(PT.west)+(-2.5,6)$) and ($(U.west)+(-2.5,-1)$) ..
+  node[cardlbl, pos=0.95] {1:1} (U.south west);
+
+% ========================================================================
+% Legenda
+% ========================================================================
+\node[draw=black!35, fill=white, rounded corners=2pt, inner sep=5pt,
+      font=\rmfamily\tiny, align=left,
+      anchor=north west]
+  at (5.5, -19.5)
+{%
+  \textbf{Legenda}\\[2pt]
+  \textbf{PK}\ \ primárny kľúč\\
+  \textbf{FK}\ \ cudzí kľúč\\
+  \textbf{UQ}\ unikátne pole\\[2pt]
+  \tikz\draw[line width=0.55pt, draw=black!55, >=Stealth, ->] (0,0) -- (0.5,0); \ relácia 1:N\\
+  \tikz\draw[dashed, line width=0.55pt, draw=black!55, >=Stealth, ->] (0,0) -- (0.5,0); \ unárna relácia\\[2pt]
+  \tikz\draw[fill=blue!4!white, draw=blue!40!black!65, line width=0.5pt] (0,0) rectangle (0.35,0.22); \ jadrová entita\\
+  \tikz\draw[fill=white, draw=teal!50!black!80, line width=0.5pt] (0,0) rectangle (0.35,0.22); \ podporná entita\\
+};
+
+\end{tikzpicture}
