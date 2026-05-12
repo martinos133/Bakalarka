@@ -1,34 +1,27 @@
-% Redefine the abstract environment to align the title and content to the left
+% Abstrakt podľa referenčného formátu (ABSTRAKT + bibliografický záznam + text + kľúčové slová)
 \makeatletter
-\renewenvironment{abstract}{
-    \if@twocolumn
-        \section*{\abstractname}%
-    \else
-        \normalfont\small
-        \begin{flushleft} % Change from center to flushleft
-            {\bfseries \abstractname\par}%
-        \end{flushleft}%
-        \noindent\raggedright
-    \fi
-}
-{
-    \if@twocolumn\else\par\fi
-}
-\makeatother
+\thispagestyle{empty}
 
-\begin{abstract}
+\noindent\textbf{ABSTRAKT}\par\vspace{1em}
 
-    Táto práca sa zameriava na návrh a analýzu webovej aplikácie RentMe, ktorá predstavuje inovatívnu digitálnu platformu pre prenájom vecí a poskytovanie služieb v rámci jedného integrovaného systému. Aplikácia kombinuje princípy zdieľanej ekonomiky a gig ekonomiky, pričom umožňuje používateľom nielen prenajímať a vyhľadávať rôzne druhy majetku, ale zároveň ponúkať a získavať pracovné príležitosti a služby prostredníctvom inzertného systému. Cieľom aplikácie RentMe je zjednodušiť proces sprostredkovania prenájmov a služieb, zvýšiť dostupnosť lokálnych pracovných príležitostí a podporiť efektívne využívanie existujúcich zdrojov. Práca sa venuje analýze konkurenčných platforiem, návrhu funkcionalít aplikácie, technologickej architektúre a identifikácii hlavných prínosov navrhovaného riešenia. Výsledkom je koncept univerzálnej webovej platformy, ktorá prepája viacero trhových segmentov do jedného ekosystému a reaguje na aktuálne trendy digitalizácie, flexibility práce a zdieľania zdrojov.
-\vspace{1em}\\
-\textbf{Kľúčové slová:} webová aplikácia, prenájom, zdieľaná ekonomika, gig ekonomika, digitálna platforma
+\noindent\hspace*{1.5em}\MakeUppercase{\@author{}}: \@title. \thesisHeader. Paneurópska vysoká škola. Fakulta informatiky. Školiteľ: \supervisor. Bratislava. FI PEVŠ, \thesisyear, \pageref{LastPage}~s.\par\vspace{1em}
 
-\end{abstract}
-\pagebreak
+\noindent\hspace*{1.5em}Táto práca sa zameriava na návrh a analýzu webovej aplikácie RentMe, ktorá predstavuje inovatívnu digitálnu platformu pre prenájom vecí a poskytovanie služieb v rámci jedného integrovaného systému. Aplikácia kombinuje princípy zdieľanej ekonomiky a gig ekonomiky, pričom umožňuje používateľom nielen prenajímať a vyhľadávať rôzne druhy majetku, ale zároveň ponúkať a získavať pracovné príležitosti a služby prostredníctvom inzertného systému. Cieľom aplikácie RentMe je zjednodušiť proces sprostredkovania prenájmov a služieb, zvýšiť dostupnosť lokálnych pracovných príležitostí a podporiť efektívne využívanie existujúcich zdrojov. Práca sa venuje analýze konkurenčných platforiem, návrhu funkcionalít aplikácie, technologickej architektúre a identifikácii hlavných prínosov navrhovaného riešenia. Výsledkom je koncept univerzálnej webovej platformy, ktorá prepája viacero trhových segmentov do jedného ekosystému a reaguje na aktuálne trendy digitalizácie, flexibility práce a zdieľania zdrojov.\par\vspace{1em}
+
+\noindent\hspace*{1.5em}\textbf{Kľúčové slová:} webová aplikácia, prenájom, zdieľaná ekonomika, gig ekonomika, digitálna platforma
+
+\clearpage
+\thispagestyle{empty}
+
+\noindent\textbf{ABSTRACT}\par\vspace{1em}
+
 \begin{otherlanguage}{english}
-\begin{abstract}
+\noindent\hspace*{1.5em}\MakeUppercase{\@author{}}: RentMe -- Web Platform for Advertising Services and Rental. Bachelor thesis. Pan-European University. Faculty of Informatics. Thesis supervisor: \supervisor. Bratislava. FI PEVŠ, \thesisyear, \pageref{LastPage}~p.\par\vspace{1em}
 
-    This thesis focuses on the design and analysis of RentMe, a web application that represents an innovative digital platform for item rental and service provision within a single integrated system. The application combines principles of the sharing economy and gig economy, enabling users not only to rent and search for various types of assets, but also to offer and obtain employment opportunities and services through a classified advertisement system. The objective of the RentMe application is to streamline the process of mediating rentals and services, enhance the availability of local employment opportunities, and promote efficient utilization of existing resources. This work addresses the analysis of competing platforms, the design of application functionalities, technological architecture, and the identification of the main benefits of the proposed solution. The result is a concept of a universal web platform that interconnects multiple market segments into one ecosystem and responds to current trends in digitalization, work flexibility, and resource sharing.
-\vspace{1em}\\
-\textbf{Keywords:} web application, rental, sharing economy, gig economy, digital platform
-\end{abstract}
+\noindent\hspace*{1.5em}This thesis focuses on the design and analysis of RentMe, a web application that represents an innovative digital platform for item rental and service provision within a single integrated system. The application combines principles of the sharing economy and gig economy, enabling users not only to rent and search for various types of assets, but also to offer and obtain employment opportunities and services through a classified advertisement system. The objective of the RentMe application is to streamline the process of mediating rentals and services, enhance the availability of local employment opportunities, and promote efficient utilization of existing resources. This work addresses the analysis of competing platforms, the design of application functionalities, technological architecture, and the identification of the main benefits of the proposed solution. The result is a concept of a universal web platform that interconnects multiple market segments into one ecosystem and responds to current trends in digitalization, work flexibility, and resource sharing.\par\vspace{1em}
+
+\noindent\hspace*{1.5em}\textbf{Keywords:} web application, rental, sharing economy, gig economy, digital platform
 \end{otherlanguage}
+
+\clearpage
+\makeatother

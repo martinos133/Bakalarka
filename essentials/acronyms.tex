@@ -1,37 +1,20 @@
 % ============================================================
-%  Zoznam skratiek a značiek
-%  Čistý booktabs štýl — skratka | plný názov
+%  Zoznam skratiek a značiek - jednoduchý zoznam podľa predlohy
 % ============================================================
 
-% Redefinujeme výstup glossaries tak, aby vyzeralo ako profesionálna tabuľka
-\newacronymstyle{clean-table}
-{%
-  \GlsUseAcrEntryDispStyle{long-short}%
-}
-{%
-  \renewcommand{\glsgroupheading}[1]{}%
-  \renewcommand{\glsgroupskip}{}%
+% Vlastný štýl: skratka v ľavom stĺpci, plný názov vpravo, bez čiar a pozadia
+\newglossarystyle{plainacr}{%
+  \renewenvironment{theglossary}{}{}%
+  \renewcommand*{\glossaryheader}{}%
+  \renewcommand*{\glsgroupheading}[1]{}%
   \renewcommand{\glossentry}[2]{%
-    \glsentryshort{##1} & \glsentrylong{##1} \\[2pt]%
+    \noindent\hspace*{1.5em}%
+    \makebox[3.5cm][l]{\glsentryshort{##1}}\glsentrylong{##1}\par
+    \vspace{0.35em}%
   }%
-  \renewenvironment{theglossary}%
-  {%
-    \setlength{\tabcolsep}{10pt}%
-    \renewcommand{\arraystretch}{1.45}%
-    \begin{longtable}{@{}
-        >{\bfseries\sffamily}p{0.14\linewidth}
-        p{0.82\linewidth}@{}}
-    \toprule
-    \rowcolor{gray!12}
-    \textbf{Skratka} & \textbf{Plný názov} \\
-    \midrule
-    \endhead
-    \bottomrule
-    \endfoot
-  }%
-  {\end{longtable}}%
+  \renewcommand*{\glsgroupskip}{}%
 }
-\setacronymstyle{clean-table}
+\setglossarystyle{plainacr}
 
 % ── Skratky — abecedne ──────────────────────────────────────────────────────
 

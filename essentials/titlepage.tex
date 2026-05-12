@@ -1,24 +1,22 @@
 \makeatletter
 \begin{titlepage}
+    \thispagestyle{empty}
     \begin{center}
-        \MakeUppercase{\textbf{\university}}\\
-        \MakeUppercase{\textbf{\faculty}}
+        \textbf{\MakeUppercase{\university}}\\
+        \textbf{\MakeUppercase{\faculty}}
     \end{center}
-    
-    \vbox to 0pt{
-        \vspace{4em}
-        \textbf{\uid}
-        \vss 
-    }
-    
+
+    \vspace{3em}
+    \noindent\textbf{\uid}
+
     \vspace*{\fill}
     \begin{center}
-        \textbf{\large \@title\\}
-        \vspace{1em}
-        \textbf{\thesisHeader}
+        \textbf{\large \MakeUppercase{\@title}}\\[1em]
+        \thesisHeader
     \end{center}
     \vspace*{\fill}
-    \textbf{\thesisyear\\\@author}
-    
+
+    \noindent\thesisyear\\
+    \@author
 \end{titlepage}
 \makeatother

@@ -1,33 +1,31 @@
 \makeatletter
 \begin{titlepage}
+    \thispagestyle{empty}
     \begin{center}
-        \MakeUppercase{\textbf{\university}}\\
-        \MakeUppercase{\textbf{\faculty}}
-    
-    \vspace*{\fill}
-    
-        \textbf{\large \@title\\}
-        \vspace{1em}
-        \thesisHeader\\
-        \vspace{1em}
-        \textbf{\@author}
+        \textbf{\MakeUppercase{\university}}\\
+        \textbf{\MakeUppercase{\faculty}}
     \end{center}
-    \vspace{8em}
-    
+
+    \vspace*{\fill}
+
+    \begin{center}
+        \textbf{\large \MakeUppercase{\@title}}\\[1.5em]
+        \thesisHeader
+    \end{center}
+
+    \vspace{4em}
+
     \noindent
-    \begin{tabular}{@{}ll@{}}
-        Študijný program: & \program \\[1.3em]
-        Študijný odbor: & \fieldofstudy \\[1.3em]
-        Školiace pracovisko: & \department \\[1.3em]
+    \begin{tabular}{@{}p{5cm}l@{}}
+        Študijný program: & \program \\[1em]
+        Študijný odbor: & \fieldofstudy \\[1em]
+        Školiace pracovisko: & \department \\[1em]
         Školiteľ: & \supervisor \\
-        % Konzultant: & \consultant \\ % Optional
     \end{tabular}
-    
-    \vspace{10em} 
-    \noindent
-    \textbf{Bratislava \thesisyear} 
-    
-    
-    
+
+    \vspace*{\fill}
+
+    \noindent Bratislava \thesisyear\\
+    \@author
 \end{titlepage}
 \makeatother

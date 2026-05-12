@@ -5,9 +5,8 @@
 \usepackage[main=slovak,english,provide=*]{babel}
 \usepackage{setspace}
 \usepackage{pdfpages}
-% Times New Roman font - odkomentujte po inštalácii: sudo tlmgr install newtxtext
-% \usepackage{newtxtext} % Times New Roman
-% Dočasná náhrada - použije sa default font
+% Times New Roman-like font (Times Roman z psnfss)
+\usepackage{mathptmx} % Times-like serif font (matches reference PDF)
 \usepackage[a4paper, left=3.5cm, right=2cm, top=2.5cm, bottom=2.5cm]{geometry} % Margins
 \usepackage{graphicx}
 \usepackage[table]{xcolor}
@@ -26,18 +25,27 @@
 
 \usepackage[T1]{fontenc} % Formatting
 \usepackage[utf8]{inputenc}
-\usepackage{lmodern} % Vector fonts (fixes blurry PK bitmap fonts)
+% lmodern odstránený – kolidoval by s Times (mathptmx) fontom z reference
 \usepackage{microtype} % Better kerning/protrusion (improves readability)
 
-% Každá hlavná kapitola (\section) začína na novej strane
+% Každá hlavná kapitola (\section) začína na novej strane; nadpisy v UPPERCASE
+% (podľa referenčnej predlohy: "1 ÚVOD", "1.1 SYSTÉM KVALITY")
 \usepackage{xparse}
 \let\origsection\section
 \RenewDocumentCommand{\section}{s o m}{%
   \clearpage\phantomsection
   \IfBooleanTF{#1}{%
-    \IfNoValueTF{#2}{\origsection*{#3}}{\origsection*[#2]{#3}}%
+    \IfNoValueTF{#2}{\origsection*{\MakeUppercase{#3}}}{\origsection*[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
   }{%
-    \IfNoValueTF{#2}{\origsection{#3}}{\origsection[#2]{#3}}%
+    \IfNoValueTF{#2}{\origsection{\MakeUppercase{#3}}}{\origsection[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
+  }%
+}
+\let\origsubsection\subsection
+\RenewDocumentCommand{\subsection}{s o m}{%
+  \IfBooleanTF{#1}{%
+    \IfNoValueTF{#2}{\origsubsection*{\MakeUppercase{#3}}}{\origsubsection*[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
+  }{%
+    \IfNoValueTF{#2}{\origsubsection{\MakeUppercase{#3}}}{\origsubsection[\MakeUppercase{#2}]{\MakeUppercase{#3}}}%
   }%
 }
 
@@ -98,9 +106,10 @@
 \def\thesisHeader{Diplomová práca}
 \fi
 
-\def\uid{FI-123456-12345} % Replace with your own student ID
+% !!! NUTNÉ DOPLNIŤ pred odovzdaním (nedostupné z PDF):
+\def\uid{FI-XXXXXX-XXXXX}        % TODO: doplň svoje evidenčné číslo zo zadania (formát FI-NNNNNN-NNNNN)
 \def\supervisor{Mgr. Michal Drobný}
-\def\consultant{Mgr. Ignác Novák} % Optional, remove in titlepage-alt
+\def\consultant{Mgr. Ignác Novák} % Voliteľné, použité len ak konzultant existuje
 \def\thesisyear{2026}
 
 % University metadata
@@ -132,11 +141,51 @@
 \pagestyle{fancy}
 \fancyhead{}
 \fancyfoot{}
-\fancyfoot[R]{\thepage}
+\fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0pt}%
 
 \makeglossaries
 \loadglsentries{essentials/acronyms}
+
+% ── Formátovanie obsahu (TOC) podľa referenčnej predlohy ────────────────────
+% Referencia exactly:
+%   \section (1, 2, 3...)       = BOLD + bodky
+%   \subsection (1.1, 2.1...)   = NORMAL (nie bold), kapitálkami z definície \subsection
+%   \subsubsection (1.1.1...)   = NORMAL + bodky
+%   Front-matter entries (Zoznam ilustrácií, Zoznam tabuliek, Zoznam skratiek): NORMAL
+\makeatletter
+% \section v obsahu — BOLD + bodky
+\renewcommand*\l@section[2]{%
+  \ifnum \c@tocdepth >\z@
+    \addpenalty\@secpenalty
+    \addvspace{0.6em \@plus\p@}%
+    \setlength\@tempdima{1.5em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode \bfseries
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\leaders\hbox{$\m@th
+        \mkern \@dotsep mu\hbox{.}\mkern \@dotsep
+        mu$}\hfill
+      \nobreak\hb@xt@\@pnumwidth{\hss \normalfont #2}\par
+    \endgroup
+  \fi}
+% \subsection v obsahu — NORMAL + bodky (referencia má 1.1 SYSTÉM KVALITY nie bold)
+\renewcommand*\l@subsection{\@dottedtocline{2}{1.5em}{2.6em}}
+% \subsubsection v obsahu — NORMAL + bodky
+\renewcommand*\l@subsubsection{\@dottedtocline{3}{4.1em}{3.4em}}
+\makeatother
+
+% Nadpis "Obsah" + nadpisy zoznamov — BOLD veľký, podľa referencie
+\renewcommand{\contentsname}{Obsah}
+\makeatletter
+\renewcommand{\tableofcontents}{%
+  \par\noindent{\Large\bfseries\contentsname}\par\vspace{1em}%
+  \@mkboth{\contentsname}{\contentsname}%
+  \begingroup\small\@starttoc{toc}\endgroup}
+\makeatother
 
 % Popisky obrázkov vľavo; tabuľky: popisok pod tabuľkou, kompaktnejšia typografia
 \captionsetup{
@@ -246,6 +295,9 @@
 \begin{document}
 \selectlanguage{slovak}
 
+% Front matter: bez čísel strán (titulné strany, zadanie, vyhlásenie, poďakovanie, abstrakty)
+\pagestyle{empty}
+
 % Essentials
 \include{essentials/titlepage}
 \include{essentials/titlepage-alt}
@@ -253,18 +305,31 @@
 % Replace file with your own:
 \includepdf{essentials/assignment.pdf}
 %
-% Customize these files:
-\include{essentials/acknowledgment}
+% Poradie podľa referenčnej predlohy: Čestné vyhlásenie, potom Poďakovanie
 \include{essentials/declaration}
+\include{essentials/acknowledgment}
 \include{essentials/abstract}
+
+% Zapnúť stránkovanie pre obsah a nasledujúce sekcie (číslovanie centrované)
+\pagestyle{fancy}
 
 % ── Obsah ──────────────────────────────────────────────────────────────────
 \tableofcontents
 \clearpage
 
-% ── Zoznam obrázkov ────────────────────────────────────────────────────────
+% ── Zoznam ilustrácií ──────────────────────────────────────────────────────
+\renewcommand{\listfigurename}{Zoznam ilustrácií}
+\makeatletter
+% Nadpisy zoznamov: BOLD large (zhodný štýl ako "Obsah")
+\renewcommand{\listoffigures}{%
+  \par\noindent{\Large\bfseries\listfigurename}\par\vspace{1em}%
+  \@starttoc{lof}}
+\renewcommand{\listoftables}{%
+  \par\noindent{\Large\bfseries\listtablename}\par\vspace{1em}%
+  \@starttoc{lot}}
+\makeatother
 \listoffigures
-\addcontentsline{toc}{section}{Zoznam obrázkov}
+\addcontentsline{toc}{section}{Zoznam ilustrácií}
 \clearpage
 
 % ── Zoznam tabuliek ────────────────────────────────────────────────────────
@@ -275,7 +340,9 @@
 % ── Zoznam skratiek a značiek ──────────────────────────────────────────────
 \glsaddall
 \addcontentsline{toc}{section}{Zoznam skratiek a značiek}
-\printglossary[type=\acronymtype,title={Zoznam skratiek a značiek},toctitle={Zoznam skratiek a značiek}]
+\noindent{\Large\bfseries Zoznam skratiek a značiek}\par\vspace{1em}
+{\renewcommand{\glossarysection}[2][]{}%
+ \printglossary[type=\acronymtype,title={}]}
 \clearpage
 
 
@@ -1322,5 +1389,8 @@ Platforma tak napĺňa svoju hlavnú misiu: konsolidovať rozptýlenú ponuku lo
 
 % Appendices - odkomentuj, keď budeš mať prílohy
 % \include{essentials/appendices}
+
+% Label na poslednej strane – pre dynamický počet strán v abstrakte
+\label{LastPage}
 
 \end{document}
