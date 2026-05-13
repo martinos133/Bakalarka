@@ -123,7 +123,8 @@
 \setlength{\parskip}{0pt}         % žiadna medzera medzi odsekmi (predloha)
 \emergencystretch=2em  % dovolí LaTeXu mierne roztiahnuť medzery pred vyhlásením Overfull
 
-% Veľkosti nadpisov ako v predlohe (jemne menšie než default article class)
+% Jednotné veľkosti nadpisov: VŠETKY úrovne sekcií + nadpisy zoznamov majú \large + bold
+% (predloha bakalárky - konzistentný štýl naprieč celou prácou)
 \makeatletter
 \renewcommand{\section}{\@startsection{section}{1}{\z@}%
   {-3.5ex \@plus -1ex \@minus -.2ex}%
@@ -132,11 +133,11 @@
 \renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}%
   {-3.25ex\@plus -1ex \@minus -.2ex}%
   {1.5ex \@plus .2ex}%
-  {\normalfont\normalsize\bfseries}}
+  {\normalfont\large\bfseries}}
 \renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{\z@}%
   {-3.25ex\@plus -1ex \@minus -.2ex}%
   {1.5ex \@plus .2ex}%
-  {\normalfont\normalsize\bfseries}}
+  {\normalfont\large\bfseries}}
 \makeatother
 
 % Po refaktoringu \section/\subsection treba znova aplikovať UPPERCASE wrapper
@@ -202,12 +203,16 @@
 \renewcommand*\l@subsubsection{\@dottedtocline{3}{4.1em}{3.4em}}
 \makeatother
 
-% Nadpis "Obsah" + nadpisy zoznamov — BOLD veľký, podľa referencie
+% Nadpis "Obsah" + nadpisy zoznamov — vykreslí ich rovnaký engine ako \section,
+% takže sú identické s číslovanými nadpismi (rovnaká veľkosť, indentácia, spacing)
 \renewcommand{\contentsname}{Obsah}
 \makeatletter
+% Helper na vykreslenie nadpisu zoznamu rovnakým štýlom ako sekcia (bez uppercase wrappera)
+\newcommand{\listheading}[1]{%
+  \origsection*{#1}%
+  \@mkboth{#1}{#1}}
 \renewcommand{\tableofcontents}{%
-  \par\noindent{\Large\bfseries\contentsname}\par\vspace{1em}%
-  \@mkboth{\contentsname}{\contentsname}%
+  \listheading{\contentsname}%
   \begingroup\small\@starttoc{toc}\endgroup}
 \makeatother
 
@@ -390,13 +395,11 @@
 % ── Zoznam ilustrácií ──────────────────────────────────────────────────────
 \renewcommand{\listfigurename}{Zoznam ilustrácií}
 \makeatletter
-% Nadpisy zoznamov: BOLD large (zhodný štýl ako "Obsah")
+% Nadpisy zoznamov: rovnaký štýl ako section (cez \listheading)
 \renewcommand{\listoffigures}{%
-  \par\noindent{\Large\bfseries\listfigurename}\par\vspace{1em}%
-  \@starttoc{lof}}
+  \listheading{\listfigurename}\@starttoc{lof}}
 \renewcommand{\listoftables}{%
-  \par\noindent{\Large\bfseries\listtablename}\par\vspace{1em}%
-  \@starttoc{lot}}
+  \listheading{\listtablename}\@starttoc{lot}}
 \makeatother
 \listoffigures
 \addcontentsline{toc}{section}{Zoznam ilustrácií}
@@ -410,7 +413,7 @@
 % ── Zoznam skratiek a značiek ──────────────────────────────────────────────
 \glsaddall
 \addcontentsline{toc}{section}{Zoznam skratiek a značiek}
-\noindent{\Large\bfseries Zoznam skratiek a značiek}\par\vspace{1em}
+\listheading{Zoznam skratiek a značiek}
 {\renewcommand{\glossarysection}[2][]{}%
  \printglossary[type=\acronymtype,title={}]}
 \clearpage
@@ -1037,12 +1040,26 @@ Na definovanie vizuálnej identity platformy som zvolil Tailwind CSS, čo je \em
 
 \subsubsection{Integrácia s mapovými podkladmi (Leaflet)}
 \noindent
-Pre inzertný portál je kľúčová vizualizácia polohy. Vo fronte aplikácie \hlcode{platform} využívam knižnicu Leaflet v kombinácii s React komponentmi. Táto integrácia umožňuje návštevníkom dynamicky prehliadať inzeráty na interaktívnej mape, pričom dáta o polohe (latitúda a longitúda) sú v reálnom čase sťahované z NestJS API.
+Pre inzertný portál je kľúčová vizualizácia polohy. Vo fronte aplikácie \hlcode{platform} využívam knižnicu Leaflet v kombinácii s React komponentmi. Táto integrácia umožňuje návštevníkom dynamicky prehliadať inzeráty na interaktívnej mape, pričom dáta o polohe (latitúda a longitúda) sú v reálnom čase sťahované z NestJS API. Globálny pohľad na mapu so všetkými aktívnymi inzerátmi reprezentovanými ako interaktívne markery dokumentuje obrázok~\ref{fig:mapa-1}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/mapa_1.png}
+\caption{Mapové zobrazenie inzerátov (Leaflet) -- markery agregované do clusterov pri väčšom priblížení a dynamické načítanie polôh z endpointu \texttt{GET /advertisements/map}}
+\label{fig:mapa-1}
+\end{figure}
 
 Keďže knižnice ako Leaflet pracujú priamo s objektom \hlcode{window}, ktorý na serveri neexistuje, bolo nutné vyriešiť kompatibilitu so Server-Side Renderingom (SSR). V Next.js sa takéto klientske knižnice načítavajú asynchrónne pomocou funkcie \texttt{dynamic} z modulu \texttt{next/dynamic}, typicky zápisom v tvare:\par
 \nobreak\noindent{\small\texttt{dynamic(() => import(...), \{ ssr: false \})}}\par
 \nobreak\noindent
-Toto riešenie zabezpečí, že sa mapa inicializuje až priamo v prehliadači používateľa, čím sa predíde chybám pri renderovaní na serveri.
+Toto riešenie zabezpečí, že sa mapa inicializuje až priamo v prehliadači používateľa, čím sa predíde chybám pri renderovaní na serveri. Pri kliknutí na konkrétny marker sa zobrazí detailný popup s náhľadom inzerátu, ako je znázornené na obrázku~\ref{fig:mapa-2}; popup obsahuje fotografiu, názov, cenu a odkaz na plný detail ponuky.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/mapa_2.png}
+\caption{Interaktívny popup nad markerom v mape Leaflet -- náhľad inzerátu s fotografiou, názvom, cenou a odkazom na detail}
+\label{fig:mapa-2}
+\end{figure}
 
 \subsection{Perzistencia dát: PostgreSQL a Prisma ORM}
 \noindent
@@ -1318,13 +1335,55 @@ Všetky tri frontendové aplikácie (\hlcode{platform}, \hlcode{user}, \hlcode{a
 
 \subsubsection{Verejná platforma (vyhľadávanie, mapa, blog)}
 \noindent
-Aplikácia \hlcode{apps/platform} je vstupnou bránou celej platformy a je optimalizovaná predovšetkým na rýchlosť a SEO. Väčšina stránok (zoznamy inzerátov, detail inzerátu, blog, statické stránky) je vykresľovaná ako React Server Components, čo zaručuje okamžitú odozvu a plnú indexovateľnosť obsahu vyhľadávačmi.
+Aplikácia \hlcode{apps/platform} je vstupnou bránou celej platformy a je optimalizovaná predovšetkým na rýchlosť a SEO. Väčšina stránok (zoznamy inzerátov, detail inzerátu, blog, statické stránky) je vykresľovaná ako React Server Components, čo zaručuje okamžitú odozvu a plnú indexovateľnosť obsahu vyhľadávačmi. Úvodná stránka platformy s hero sekciou, hlavnou navigáciou a prezentáciou kľúčových kategórií je zobrazená na obrázku~\ref{fig:platforma-1}.
 
-\textbf{Vyhľadávanie a filtrovanie:} Kľúčovým prvkom je vyhľadávací panel, ktorý dynamicky načítava filtre podľa zvolenej kategórie z API. Parametre vyhľadávania sú zakódované priamo do URL adresy (\hlcode{searchParams}), čo umožňuje zdieľanie odkazu na konkrétny výsledok hľadania a zároveň zaručuje správnu indexáciu výsledkov vyhľadávačmi.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/platforma_1.png}
+\caption{Verejná platforma -- úvodná stránka s hero sekciou, hlavnou navigáciou a prezentáciou kľúčových kategórií}
+\label{fig:platforma-1}
+\end{figure}
 
-\textbf{Mapové zobrazenie (Leaflet):} Stránka s mapou zobrazuje všetky aktívne inzeráty ako interaktívne markery. Dáta o polohe (latitúda, longitúda) sú načítané z endpointu \hlcode{GET /advertisements/map}. Keďže knižnica Leaflet pristupuje k objektu \hlcode{window}, ktorý na serveri neexistuje, komponent mapy je načítaný asynchrónne pomocou \hlcode{next/dynamic} s parametrom \hlcode{ssr: false}, čím sa predíde hydratačným chybám.
+\textbf{Vyhľadávanie a filtrovanie:} Kľúčovým prvkom je vyhľadávací panel, ktorý dynamicky načítava filtre podľa zvolenej kategórie z API. Parametre vyhľadávania sú zakódované priamo do URL adresy (\hlcode{searchParams}), čo umožňuje zdieľanie odkazu na konkrétny výsledok hľadania a zároveň zaručuje správnu indexáciu výsledkov vyhľadávačmi. Výsledná podoba prehľadu aktívnych inzerátov so zoznamovým zobrazením a postrannými filtrami je dokumentovaná na obrázku~\ref{fig:platforma-2}; obrázky~\ref{fig:category-1} a~\ref{fig:filters} ďalej zobrazujú detail kategórie s hierarchickou navigáciou a samotný panel dynamicky generovaných filtrov.
 
-\textbf{Blog a statické stránky:} Obsah blogu a informačných stránok je spravovaný cez administračný panel a uložený v databáze ako HTML. Platforma ho zobrazuje vo forme staticky renderovaných stránok, ktoré sú automaticky generované pri každom requeste (SSR) alebo môžu byť cachovane (ISR), čo minimalizuje záťaž na databázu.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/platforma_2.png}
+\caption{Verejná platforma -- prehľad aktívnych inzerátov so zoznamovým zobrazením a postrannými filtrami}
+\label{fig:platforma-2}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/category_1.png}
+\caption{Detail kategórie -- zoznam inzerátov v rámci zvolenej kategórie s hierarchickou navigáciou a SEO-optimalizovanou URL}
+\label{fig:category-1}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{images/filters.png}
+\caption{Panel dynamických filtrov -- vstupy generované podľa konfigurácie kategórie (typ \texttt{TEXT}, \texttt{NUMBER}, \texttt{SELECT}, \texttt{MULTISELECT})}
+\label{fig:filters}
+\end{figure}
+
+\textbf{Mapové zobrazenie (Leaflet):} Stránka s mapou zobrazuje všetky aktívne inzeráty ako interaktívne markery (obr.~\ref{fig:platforma-3}). Dáta o polohe (latitúda, longitúda) sú načítané z endpointu \hlcode{GET /advertisements/map}. Keďže knižnica Leaflet pristupuje k objektu \hlcode{window}, ktorý na serveri neexistuje, komponent mapy je načítaný asynchrónne pomocou \hlcode{next/dynamic} s parametrom \hlcode{ssr: false}, čím sa predíde hydratačným chybám.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/platforma_3.png}
+\caption{Verejná platforma -- interaktívne mapové zobrazenie inzerátov implementované knižnicou Leaflet}
+\label{fig:platforma-3}
+\end{figure}
+
+\textbf{Blog a statické stránky:} Obsah blogu a informačných stránok je spravovaný cez administračný panel a uložený v databáze ako HTML. Platforma ho zobrazuje vo forme staticky renderovaných stránok, ktoré sú automaticky generované pri každom requeste (SSR) alebo môžu byť cachovane (ISR), čo minimalizuje záťaž na databázu. Výslednú vizuálnu podobu sekcie blogu a informačných stránok dokumentuje obrázok~\ref{fig:platforma-4}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/platforma_4.png}
+\caption{Verejná platforma -- sekcia blogu a informačných stránok generovaných cez SSR z databázy}
+\label{fig:platforma-4}
+\end{figure}
 
 \subsubsection{Používateľská zóna (správa inzerátov a profilu)}
 \noindent
@@ -1332,15 +1391,106 @@ Aplikácia \hlcode{apps/user} je dostupná výhradne pre prihlásených použív
 
 \textbf{Sprievodca tvorbou inzerátu (Wizard):} Namiesto jednoduchého formulára som implementoval viacstupňového sprievodcu (\emph{wizard}), ktorý vedie používateľa krok za krokom: výber kategórie~→ zadanie detailov a špecifikácií~→ nahratie fotografií~→ zadanie polohy na mape~→ odoslanie na schválenie. Tento prístup výrazne znižuje kognitívnu záťaž pri tvorbe inzerátu a prispieva k vyššej kvalite zadaných dát.
 
-\textbf{Správa inzerátov:} Dashboard používateľa zobrazuje všetky jeho inzeráty vrátane ich aktuálneho stavu (\hlcode{PENDING}, \hlcode{ACTIVE}, \hlcode{ARCHIVED}) a štatistík zobrazení. Používateľ môže inzeráty editovať, deaktivovať alebo zmazať.
+V prvom kroku sprievodcu (obr.~\ref{fig:inzerat-1}) si používateľ zvolí typ ponuky (služba alebo prenájom) a hierarchicky vyberie cieľovú kategóriu. Voľba kategórie následne určuje, aké dynamické filtre a špecifikácie sa zobrazia v druhom kroku.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/inzerat_1.png}
+\caption{Sprievodca tvorbou inzerátu -- krok~1: výber typu ponuky (služba alebo prenájom) a hierarchický výber kategórie}
+\label{fig:inzerat-1}
+\end{figure}
+
+V druhom kroku používateľ vyplní základné údaje o inzeráte -- názov, popis, cenu a hodnoty dynamických špecifikácií, ktoré sú generované podľa konfigurácie zvolenej kategórie (obr.~\ref{fig:inzerat-2}). Tieto údaje sú serializované do JSON štruktúry \hlcode{specifications} a uložené v databáze.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/inzerat_2.png}
+\caption{Sprievodca tvorbou inzerátu -- krok~2: zadanie základných údajov (názov, popis, cena) a dynamických špecifikácií podľa zvolenej kategórie}
+\label{fig:inzerat-2}
+\end{figure}
+
+Tretí krok je venovaný obrazovej dokumentácii ponuky a definícii balíčkov služieb (obr.~\ref{fig:inzerat-3}). Pre kategórie typu \hlcode{SERVICE} môže používateľ definovať viacero variantov balíčkov s rozdielnym rozsahom a cenou, čo je inšpirované modelom platformy Fiverr.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/inzerat_3.png}
+\caption{Sprievodca tvorbou inzerátu -- krok~3: nahrávanie obrazovej dokumentácie a definícia balíčkov služieb}
+\label{fig:inzerat-3}
+\end{figure}
+
+Posledný krok sprievodcu zhromažďuje geografické údaje cez interaktívnu mapu Leaflet a umožňuje finálne odoslanie inzerátu na schválenie do moderačnej fronty (obr.~\ref{fig:inzerat-4}). Po odoslaní získa inzerát stav \hlcode{PENDING} a čaká na schválenie administrátorom.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/inzerat_4.png}
+\caption{Sprievodca tvorbou inzerátu -- krok~4: výber polohy na interaktívnej mape (Leaflet) a finálne odoslanie inzerátu na schválenie}
+\label{fig:inzerat-4}
+\end{figure}
+
+\textbf{Správa inzerátov:} Dashboard používateľa zobrazuje všetky jeho inzeráty vrátane ich aktuálneho stavu (\hlcode{PENDING}, \hlcode{ACTIVE}, \hlcode{ARCHIVED}) a štatistík zobrazení. Používateľ môže inzeráty editovať, deaktivovať alebo zmazať. Prehľadovú stránku profilu predajcu so zoznamom jeho aktívnych inzerátov dokumentuje obrázok~\ref{fig:profile-inzerat}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/profile-inzerat.png}
+\caption{Verejný profil predajcu -- prehľad aktívnych inzerátov, kontaktné údaje a hodnotenia získané od ostatných používateľov platformy}
+\label{fig:profile-inzerat}
+\end{figure}
+
+Okrem viacstupňového sprievodcu poskytuje aplikácia aj klasický jednostranový formulár (obr.~\ref{fig:pridat-inzerat} a~\ref{fig:pridat-inzerat-1}) určený pre používateľov, ktorí preferujú rýchlejšie vytvorenie inzerátu bez vedeného procesu. Formulár zhromažďuje rovnaký rozsah údajov (kategória, špecifikácie, fotografie, lokalita) ako wizard, ale prezentuje ich naraz s validáciou na strane klienta.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/pridat-inzerat.png}
+\caption{Pridanie inzerátu -- horná časť formulára so základnými údajmi (typ ponuky, kategória, názov, popis, cena) a možnosťou nahratia fotografií}
+\label{fig:pridat-inzerat}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/pridat-inzerat_1.png}
+\caption{Pridanie inzerátu -- spodná časť formulára s dynamickými špecifikáciami, výberom polohy na mape Leaflet a tlačidlom na odoslanie do moderačnej fronty}
+\label{fig:pridat-inzerat-1}
+\end{figure}
 
 \textbf{Komunikácia -- Inbox:} Modul správ zobrazuje zoznam konverzácií (dopytov k inzerátom) a umožňuje odpovedanie v reálnom čase. Systémové notifikácie (napr. o schválení inzerátu) sú vizuálne odlíšené od bežných správ od iných používateľov.
 
 \textbf{Obľúbené položky:} Stránka zobrazuje inzeráty uložené používateľom do obľúbených. Pridávanie a odoberanie z obľúbených je realizované optimistickým UI updatem -- tlačidlo reaguje okamžite bez čakania na odpoveď servera, čo zvyšuje vnímaný výkon.
 
+\textbf{Platby a transakcie:} Sekcia platieb v používateľskej zóne agreguje finančné transakcie nad inzerátmi v dvoch perspektívach -- prijaté platby (pohľad vlastníka/\hlcode{owner}) a uskutočnené platby (pohľad záujemcu/\hlcode{renter}). Každá transakcia obsahuje výšku sumy, stav (\hlcode{PaymentStatus}), obdobie prenájmu a referenciu na konkrétny inzerát. Prehľadovú obrazovku zobrazuje obrázok~\ref{fig:platba-1}, detail jednotlivej platby s časovou osou stavov je dokumentovaný na obrázku~\ref{fig:platby-2}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/platba-1.png}
+\caption{Modul platieb -- prehľad transakcií používateľa s filtrovaním podľa stavu (\texttt{PENDING}, \texttt{COMPLETED}, \texttt{FAILED}, \texttt{CANCELLED}, \texttt{REFUNDED})}
+\label{fig:platba-1}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/platby-2.png}
+\caption{Modul platieb -- detail jednotlivej transakcie so sumou, obdobím prenájmu, referenciou na inzerát a časovou osou zmien stavu}
+\label{fig:platby-2}
+\end{figure}
+
 \subsubsection{Administračný panel (CMS, vizuálny editor GrapesJS, štatistiky)}
 \noindent
-Aplikácia \hlcode{apps/admin} poskytuje správcom platformy kompletné nástroje na správu obsahu, používateľov a konfigurácii systému. Je chránená dvojvrstvovým overovaním: platným JWT tokenom a rolou \hlcode{ADMIN}.
+Aplikácia \hlcode{apps/admin} poskytuje správcom platformy kompletné nástroje na správu obsahu, používateľov a konfigurácie systému. Je chránená dvojvrstvovým overovaním: platným JWT tokenom a rolou \hlcode{ADMIN}, pričom prístup začína na dedikovanej prihlasovacej obrazovke s vlastným brandingom (obr.~\ref{fig:admin-login}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.78\textwidth]{images/admin-login.png}
+\caption{Prihlasovacia obrazovka administračného panela RentMe -- minimalistický dizajn s tmavou paletou a prémiovým zlatým akcentom}
+\label{fig:admin-login}
+\end{figure}
+
+Po úspešnej autentifikácii je administrátor presmerovaný na hlavnú nástenku (\emph{dashboard}), ktorá agreguje kľúčové metriky platformy (celkový počet používateľov, aktívnych používateľov, inzerátov a aktívnych inzerátov) a sprístupňuje rýchle akcie pre najčastejšie pracovné toky -- nový inzerát, nová kategória, moderácia obsahu, nastavenia (obr.~\ref{fig:admin-dashboard}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/admin.png}
+\caption{Hlavná nástenka admin panela -- bočná navigácia (Nástenky, Komunikácia, Moderácia, Správa, Obsah), rýchle akcie, agregované metriky a panel s nedávnymi konverzáciami}
+\label{fig:admin-dashboard}
+\end{figure}
 
 \textbf{Moderácia inzerátov:} Hlavnou obrazovkou admina je zoznam inzerátov čakajúcich na schválenie (\hlcode{PENDING}). Pre každý inzerát zobrazuje náhľad, fotografie a lokalizáciu na mape. Administrátor môže inzerát schváliť (zmena stavu na \hlcode{ACTIVE}), zamietnuť alebo archivovať. Každá akcia automaticky odošle systémovú správu inzerentovi.
 
@@ -1348,7 +1498,14 @@ Aplikácia \hlcode{apps/admin} poskytuje správcom platformy kompletné nástroj
 
 \textbf{Správa kategórií a filtrov:} Admin panel umožňuje vytvárať a editovať hierarchiu kategórií (hlavné kategórie, podkategórie) a priraďovať im dynamické filtre. Každý filter má definovaný typ (\hlcode{TEXT}, \hlcode{NUMBER}, \hlcode{SELECT}), názov a poradie zobrazenia. Zmeny sa okamžite premietnu do vyhľadávacieho panela na verejnej platforme bez nutnosti nasadenia novej verzie aplikácie.
 
-\textbf{Analytický dashboard:} Panel štatistík zobrazuje grafy kliknutí na inzeráty v čase, rozdelenie záujmu podľa kategórií a segmentáciu podľa typu používateľa. Dáta pochádzajú z tabuľky \hlcode{ClickEvent}, ktorá je plnená asynchrónne pri každom zobrazení detailu inzerátu \parencite{winters2020swe}.
+\textbf{Analytický dashboard:} Panel štatistík zobrazuje grafy kliknutí na inzeráty v čase, rozdelenie záujmu podľa kategórií a segmentáciu podľa typu používateľa (obr.~\ref{fig:admin-stats}). Dáta pochádzajú z tabuľky \hlcode{ClickEvent}, ktorá je plnená asynchrónne pri každom zobrazení detailu inzerátu \parencite{winters2020swe}. Časové obdobie štatistík je prepínateľné medzi 7 dňami, 30 dňami a 3 mesiacmi, pričom interaktívny tooltip umožňuje sledovať presné hodnoty v konkrétnom dni.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/admin-stats.png}
+\caption{Štatistická sekcia admin panela -- časové rady inzerátov (zlatá krivka) a registrácií používateľov (modrá krivka) s prepínateľným obdobím (7 dní / 30 dní / 3 mesiace) a interaktívnym tooltipom pre detailné hodnoty v konkrétnom dni}
+\label{fig:admin-stats}
+\end{figure}
 
 \subsection{Bezpečnostné aspekty: Hashovanie hesiel (bcrypt), validácia vstupov (class-validator) a ochrana účtov (banovanie)}
 \noindent
