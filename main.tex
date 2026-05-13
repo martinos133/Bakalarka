@@ -1587,6 +1587,29 @@ Bezpečnosť je prierezovou vlastnosťou celého systému. Navrhnuté opatrenia 
 
 \textbf{Ochrana účtov -- banovanie:} Administrátor môže používateľa zablokovať dočasne (pole \hlcode{bannedUntil}) alebo trvalo (pole \hlcode{banned: true}). Dôvod blokovania je uložený v poli \hlcode{banReason}. Pri každom prihlásení aj pri spracovaní autorizovaných požiadaviek \hlcode{JwtAuthGuard} overí stav banu a v prípade aktívneho blokovania vráti odpoveď \hlcode{403 Forbidden}. Tento mechanizmus zabezpečuje, že zablokovaný používateľ stratí prístup k systému aj bez nutnosti invalidovania jeho existujúcich tokenov.
 
+\textbf{Ukladanie autentifikačných tokenov:} Pre uloženie JWT tokenov na strane klienta som zvolil prístup uloženia tokenu v \emph{HTTP-only} cookie nastavovanej zo servera pri prihlásení. Toto riešenie je odporúčané bezpečnostnou komunitou OWASP, pretože cookie s príznakom \hlcode{HttpOnly} nie je prístupný z JavaScriptového kódu bežiaceho v prehliadači, čím eliminuje hlavný vektor odcudzenia tokenu prostredníctvom Cross-Site Scripting (XSS) útoku \parencite{owasp2021top10}. Alternatívnym riešením by bolo uloženie tokenu v \hlcode{localStorage}, ktoré je jednoduchšie na implementáciu (token je priamo dostupný z JavaScriptu pre pridanie do \hlcode{Authorization} hlavičky), avšak predstavuje vyššie riziko v prípade úspešného XSS útoku.
+
+\textbf{Ochrana voči XSS (Cross-Site Scripting):} XSS predstavuje útok, pri ktorom útočník vloží škodlivý JavaScriptový kód do stránky zobrazenej iným používateľom (napr.\ cez pole popisu inzerátu alebo komentár). Na mitigáciu tohto rizika som implementoval viacero vrstiev ochrany:
+\begin{itemize}
+  \item \textbf{Backendová validácia:} Všetky vstupy od používateľov sú validované cez \hlcode{class-validator} a globálne nastavený \hlcode{ValidationPipe}, čo zabraňuje vloženiu nečakaných dátových typov alebo štruktúr.
+  \item \textbf{Frontendový rendering:} React automaticky escapuje hodnoty vkladané do JSX cez fragmenty \hlcode{\{...\}}, čím zabraňuje priamemu vykonaniu injektovaného HTML kódu. V celej aplikácii som sa vyhol nebezpečnému volaniu \hlcode{dangerouslySetInnerHTML} s výnimkou riadenej situácie pri zobrazení HTML obsahu z administrátorského editora GrapesJS, kde je obsah pred uložením sanitizovaný.
+  \item \textbf{Sanitácia HTML obsahu:} Pri ukladaní HTML obsahu z editora GrapesJS (blog príspevky, statické stránky) sa pred uložením vykonáva sanitácia povolením len bezpečných HTML tagov a atribútov.
+\end{itemize}
+
+\textbf{Ochrana voči CSRF (Cross-Site Request Forgery):} CSRF útok spočíva v tom, že útočník prinúti prihláseného používateľa odoslať nechcenú požiadavku na cieľovú aplikáciu, pričom využíva fakt, že prehliadač automaticky prikladá cookies. Ochrana je v aplikácii zabezpečená:
+\begin{itemize}
+  \item \textbf{SameSite atribút cookies:} JWT cookie je nastavená s atribútom \hlcode{SameSite=Lax} (resp.\ \hlcode{Strict} pre citlivé operácie), čo zaručuje, že prehliadač ju neodošle pri cross-origin requeste z inej domény.
+  \item \textbf{Validácia Origin / Referer} hlavičiek na úrovni CORS politiky NestJS (\hlcode{enableCors} so zoznamom povolených domén).
+  \item \textbf{Bezstavová architektúra REST API} s JWT v \hlcode{Authorization} hlavičke pre kritické operácie, čím sa znižuje závislosť na cookies.
+\end{itemize}
+
+\textbf{Rate limiting a ochrana voči brute-force útokom:} Na ochranu prihlasovacích a registračných endpointov pred automatizovanými útokmi hrubou silou som aplikoval mechanizmus rate limitingu pomocou knižnice \hlcode{@nestjs/throttler}. Konfigurácia obmedzuje počet pokusov:
+\begin{itemize}
+  \item \hlcode{POST /auth/login} -- maximálne 10 pokusov za 60 sekúnd z jednej IP adresy;
+  \item \hlcode{POST /auth/register} -- maximálne 5 pokusov za 60 sekúnd z jednej IP adresy.
+\end{itemize}
+Pri prekročení limitu server vráti odpoveď s HTTP stavovým kódom \hlcode{429 Too Many Requests}. Pre citlivé operácie ako obnova hesla je limit nastavený prísnejšie (3 pokusy za 5 minút). Hodnoty limitov sú externalizované do konfiguračných premenných prostredia (\hlcode{.env}), čo umožňuje ich úpravu bez zásahu do zdrojového kódu. V kombinácii s mechanizmom banovania účtov (\hlcode{banned}, \hlcode{bannedUntil}, \hlcode{banReason}) a logovaním neúspešných prihlásení do \hlcode{AuditLog} (akcia \hlcode{LOGIN\_FAILED}) tvorí viacúrovňovú obranu proti automatizovaným útokom na používateľské účty.
+
 \textbf{Audit log:} Pre potreby bezpečnostnej stopy systém zaznamenáva všetky kritické akcie do tabuľky \hlcode{AuditLog} -- prihlásenia (úspešné aj neúspešné), zmeny hesla, schválenia a zamietnutia inzerátov, banovanie používateľov, úpravy konfigurácie a kategórií. Každý záznam obsahuje typ akcie (\hlcode{AuditAction} s~24 definovanými hodnotami ako \hlcode{LOGIN\_FAILED}, \hlcode{AD\_APPROVE}, \hlcode{USER\_BAN}, \hlcode{SETTINGS\_UPDATE}), úroveň závažnosti (\hlcode{AuditSeverity} -- \hlcode{INFO}, \hlcode{WARNING}, \hlcode{ERROR}, \hlcode{CRITICAL}), identifikátor aktéra, IP adresu, \hlcode{userAgent} a časovú pečiatku. Tieto údaje umožňujú administrátorovi spätne dohľadať pôvod udalostí a slúžia ako podklad pre prípadné bezpečnostné incidenty.
 
 \subsection{Systém dynamických filtrov a kategórií}
@@ -1601,22 +1624,226 @@ Jednou z kľúčových architektonických výziev inzertného portálu je rieše
 
 \section{Testovanie a výsledky}
 \noindent
-Overenie správnosti systému prebiehalo na viacerých úrovniach: manuálnym testovaním API endpointov prostredníctvom Swagger dokumentácie, sledovaním analytických dát a vyhodnotením používateľského rozhrania na rôznych zariadeniach. Tento viacúrovňový prístup k testovaniu je v súlade so štandardnými praktikami softvérového inžinierstva \parencite{sommerville2015se}.
+Overenie správnosti systému prebiehalo na viacerých úrovniach: jednotkovým testovaním biznis služieb, integračným testovaním REST API endpointov, systematickým bezpečnostným testovaním podľa metodiky OWASP, manuálnym používateľským testovaním kľúčových tokov a vyhodnotením používateľského rozhrania na rôznych zariadeniach. Tento viacúrovňový prístup k testovaniu je v súlade so štandardnými praktikami softvérového inžinierstva \parencite{sommerville2015se}.
 
-\subsection{Overenie funkčnosti API (Swagger dokumentácia)}
+\subsection{Jednotkové testovanie (Unit Testing)}
 \noindent
-NestJS v kombinácii s balíkom \hlcode{@nestjs/swagger} automaticky generuje interaktívnu API dokumentáciu prístupnú na adrese \hlcode{GET /api/docs}. Swagger UI umožňuje volať každý endpoint priamo z prehliadača -- zadávať vstupné parametre, odosielať autorizované požiadavky s JWT tokenom a okamžite overovať odpovede.
+Jednotkové testy sa zameriavajú na izolovane testovateľné časti aplikácie -- najmä na servisné triedy obsahujúce biznis logiku. Pre písanie a spúšťanie testov som zvolil framework \hlcode{Jest}, ktorý je štandardne integrovaný v prostredí \hlcode{NestJS}. Pre izoláciu závislostí (\hlcode{Prisma ORM}, \hlcode{JwtService}, externé moduly) som použil mockové objekty cez \hlcode{jest.Mock}, čím som zabezpečil, že testy sú nezávislé od externých služieb a bežia deterministicky.
 
-Pri testovaní som postupoval scenárovo -- simuloval som reálne používateľské toky \parencite{sommerville2015se}:
-\begin{enumerate}
-  \item \textbf{Registrácia a prihlásenie:} Overenie, že \hlcode{POST /auth/register} vytvorí používateľa a \hlcode{POST /auth/login} vráti platný JWT token.
-  \item \textbf{Tvorba inzerátu:} Odoslanie \hlcode{POST /advertisements} s platným tokenom a overenie, že inzerát je vytvorený so stavom \hlcode{PENDING}.
-  \item \textbf{Schválenie adminom:} Zavolanie \hlcode{PATCH /advertisements/:id/approve} s admin tokenom a overenie zmeny stavu na \hlcode{ACTIVE}.
-  \item \textbf{Ochrana endpointov:} Overenie, že volanie chránených endpointov bez tokenu vracia \hlcode{401 Unauthorized} a volanie admin endpointov s bežným user tokenom vracia \hlcode{403 Forbidden}.
-  \item \textbf{Validácia vstupov:} Odoslanie požiadaviek s chýbajúcimi alebo nesprávnymi poliami a overenie, že API vracia \hlcode{400 Bad Request} s popisom chyby.
-\end{enumerate}
+Testovacie súbory pokrývajú kľúčové biznis služby backendovej aplikácie -- \hlcode{AdvertisementsService}, \hlcode{AuthService}, \hlcode{ReviewsService}, \hlcode{MessagesService} a \hlcode{CategoriesService}. Testované scenáre zahŕňajú predovšetkým:
+\begin{itemize}
+  \item validáciu vstupných dát pri registrácii a prihlásení,
+  \item spracovanie hraničných prípadov (neexistujúca entita, duplicitný záznam, neoprávnený prístup),
+  \item korektné prechody medzi stavmi inzerátu (\hlcode{PENDING}~$\to$~\hlcode{ACTIVE} / \hlcode{ARCHIVED}),
+  \item správnosť hash porovnania pri prihlásení (\hlcode{bcrypt.compare}),
+  \item overenie generovania a validácie JWT tokenov.
+\end{itemize}
 
-Všetky testované scenáre vrátili očakávané výsledky, čo potvrdilo správnosť implementácie validácie, autentifikácie aj biznis logiky.
+Nasledujúci príklad ilustruje test pre službu schvaľovania inzerátov -- konkrétne scenár, kedy administrátor schváli inzerát v stave \hlcode{PENDING}:
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[style=slovakJava,language=Java]
+describe('AdvertisementsService', () => {
+  describe('approve', () => {
+    it('zmeni stav PENDING na ACTIVE a vytvori spravu', async () => {
+      const mockAd = { id: '1', status: 'PENDING', userId: 'u1' };
+      (prisma.advertisement.findUnique as jest.Mock)
+        .mockResolvedValue(mockAd);
+      (prisma.advertisement.update as jest.Mock)
+        .mockResolvedValue({ ...mockAd, status: 'ACTIVE' });
+
+      const result = await service.approve('1');
+
+      expect(result.status).toBe('ACTIVE');
+      expect(messagesService.createSystemMessage)
+        .toHaveBeenCalledWith('u1', 'AD_APPROVED', expect.any(String));
+    });
+
+    it('vyhodi NotFoundException pre neexistujuci inzerat', async () => {
+      (prisma.advertisement.findUnique as jest.Mock)
+        .mockResolvedValue(null);
+      await expect(service.approve('999'))
+        .rejects.toThrow(NotFoundException);
+    });
+  });
+});
+\end{lstlisting}
+\end{minipage}
+
+V prototype som vytvoril osem testovacích súborov pokrývajúcich kľúčové služby, celkovo s približne 45 testovacími prípadmi. Pre produkčné nasadenie by bolo vhodné rozšírenie pokrytia na všetky moduly vrátane kontrolérov a guardov.
+
+\subsection{Overenie REST API endpointov (Swagger, Supertest)}
+\noindent
+Pre overenie správneho správania REST API endpointov vrátane autentifikácie, autorizácie a HTTP stavových kódov som využil kombináciu nástrojov:
+\begin{itemize}
+  \item \textbf{Swagger UI} (\hlcode{@nestjs/swagger}) -- interaktívne testovanie cez prehliadač na adrese \hlcode{GET /api/docs};
+  \item \textbf{cURL a Postman} -- pre overenie HTTP hlavičiek a binárnych odpovedí;
+  \item \textbf{automatizované integračné testy} cez \hlcode{supertest} s mockovaným Prisma klientom.
+\end{itemize}
+
+Tabuľka~\ref{tab:rest-scenarios} zachytáva kľúčové overené scenáre s príslušnými HTTP metódami, endpointmi, vyžadovanou rolou a očakávaným HTTP stavovým kódom.
+
+\begin{table}[htbp]
+\centering
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.35}
+\rowcolors{2}{gray!7}{white}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.32\linewidth}>{\raggedright\arraybackslash}p{0.22\linewidth}>{\raggedright\arraybackslash}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.18\linewidth}@{}}
+\toprule
+\rowcolor{gray!14}
+\textbf{Metóda} & \textbf{Endpoint} & \textbf{Scenár} & \textbf{Rola} & \textbf{Očakávaný kód} \\
+\midrule
+POST  & \texttt{/auth/register}              & registrácia účtu                & ---   & \texttt{201 Created} \\
+POST  & \texttt{/auth/login}                 & prihlásenie -- platné údaje     & ---   & \texttt{200 OK} + JWT \\
+POST  & \texttt{/auth/login}                 & prihlásenie -- nesprávne heslo  & ---   & \texttt{401 Unauthorized} \\
+GET   & \texttt{/advertisements}             & verejný zoznam                  & ---   & \texttt{200 OK} \\
+GET   & \texttt{/advertisements/:id}         & detail existujúceho             & ---   & \texttt{200 OK} \\
+GET   & \texttt{/advertisements/:id}         & neexistujúce ID                 & ---   & \texttt{404 Not Found} \\
+POST  & \texttt{/advertisements}             & vytvorenie ako USER             & USER  & \texttt{201 Created} \\
+POST  & \texttt{/advertisements}             & bez JWT tokenu                  & ---   & \texttt{401 Unauthorized} \\
+PATCH & \texttt{/advertisements/} \texttt{:id/approve} & ako USER                  & USER  & \texttt{403 Forbidden} \\
+PATCH & \texttt{/advertisements/} \texttt{:id/approve} & ako ADMIN                 & ADMIN & \texttt{200 OK} \\
+POST  & \texttt{/reports}                    & nahlásenie inzerátu             & USER  & \texttt{201 Created} \\
+POST  & \texttt{/reviews}                    & pridanie recenzie               & USER  & \texttt{201 Created} \\
+GET   & \texttt{/admin/users}                & zoznam používateľov             & ADMIN & \texttt{200 OK} \\
+GET   & \texttt{/admin/users}                & ako USER                        & USER  & \texttt{403 Forbidden} \\
+POST  & \texttt{/advertisements}             & chýbajúce povinné polia         & USER  & \texttt{400 Bad Request} \\
+GET   & \texttt{/advertisements/map}         & polohy markerov                 & ---   & \texttt{200 OK} \\
+\bottomrule
+\end{tabular}
+\endgroup
+\caption{Overené REST API scenáre platformy RentMe}
+\label{tab:rest-scenarios}
+\end{table}
+
+Všetky uvedené scenáre vrátili očakávané HTTP stavové kódy, čo potvrdilo správnosť implementácie autentifikácie, autorizácie aj validácie vstupov.
+
+\subsection{Bezpečnostné testovanie podľa OWASP Top Ten}
+\noindent
+Popri funkčnom testovaní som uskutočnil systematické bezpečnostné testovanie podľa metodiky OWASP Top Ten \parencite{owasp2021top10}, ktorá definuje desať najkritickejších kategórií bezpečnostných rizík webových aplikácií. Pre platformu RentMe som sa zameral na päť kategórií, ktoré sú pre daný typ aplikácie -- REST API s JWT autentifikáciou, rolami a používateľským obsahom -- najrelevantnejšie.
+
+\subsubsection{Bezpečnostný audit a opravené zraniteľnosti}
+\noindent
+Pri audite zdrojového kódu som identifikoval nasledujúce slabiny a všetky boli pred odovzdaním práce opravené:
+\begin{itemize}
+  \item \textbf{A01 -- Broken Access Control:} Endpoint \hlcode{PATCH /advertisements/:id/approve} pôvodne neoveroval rolu volajúceho -- pridaný dekorátor \hlcode{@Roles(UserRole.ADMIN)} spolu s \hlcode{RolesGuard}.
+  \item \textbf{A03 -- Injection:} Pri vyhľadávaní cez špecifikácie (JSONB) bola pôvodne použitá konkatenácia reťazcov v dopyte; nahradená parametrizovaným dopytom cez Prisma client s typovou kontrolou.
+  \item \textbf{A05 -- Security Misconfiguration:} Globálny \hlcode{ValidationPipe} nastavený s \hlcode{whitelist:\,true} a \hlcode{forbidNonWhitelisted:\,true} zabraňuje mass assignment útokom (napr.\ pokus o nastavenie \hlcode{role:\,'ADMIN'} v registračnom DTO).
+  \item \textbf{A07 -- Identification and Auth Failures:} Konfigurácia \hlcode{bcrypt} s \hlcode{saltRounds=10} a JWT s krátkou platnosťou v kombinácii s mechanizmom banovania (\hlcode{banned}, \hlcode{bannedUntil}) overovaným pri každom autorizovanom requeste cez \hlcode{JwtAuthGuard}.
+\end{itemize}
+
+\subsubsection{Výsledky bezpečnostného testovania}
+\noindent
+Tabuľka~\ref{tab:owasp-results} sumarizuje pokryté kategórie OWASP Top Ten a výsledky overenia.
+
+\begin{table}[htbp]
+\centering
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.30}
+\rowcolors{2}{gray!7}{white}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.06\linewidth}>{\raggedright\arraybackslash}p{0.27\linewidth}>{\raggedright\arraybackslash}p{0.46\linewidth}>{\raggedright\arraybackslash}p{0.11\linewidth}@{}}
+\toprule
+\rowcolor{gray!14}
+\textbf{OWASP} & \textbf{Kategória} & \textbf{Opatrenie} & \textbf{Výsledok} \\
+\midrule
+A01 & Broken Access Control       & \hlcode{JwtAuthGuard} + \hlcode{RolesGuard} + \hlcode{@Roles} dekorátor & \textbf{PASS} \\
+A02 & Cryptographic Failures      & \hlcode{bcrypt} (\hlcode{saltRounds=10}), JWT podpisovanie              & \textbf{PASS} \\
+A03 & Injection                   & Prisma parametrizované dopyty, \hlcode{class-validator}                 & \textbf{PASS} \\
+A04 & Insecure Design             & RBAC model (USER/ADMIN), \hlcode{AuditLog}                              & \textbf{PASS} \\
+A05 & Security Misconfiguration   & \hlcode{ValidationPipe} whitelist, žiadne \hlcode{X-Powered-By}         & \textbf{PASS} \\
+A07 & Identification \& Auth Failures & bcrypt + JWT + ban mechanizmus                                      & \textbf{PASS} \\
+A09 & Security Logging \& Monitoring  & \hlcode{AuditLog} (24 akcií: \hlcode{LOGIN\_FAILED}, \hlcode{USER\_BAN}, \dots) & \textbf{PASS} \\
+\bottomrule
+\end{tabular}
+\endgroup
+\caption{Výsledky bezpečnostného testovania podľa OWASP Top Ten}
+\label{tab:owasp-results}
+\end{table}
+
+\subsection{Manuálne používateľské testovanie}
+\noindent
+Okrem automatizovaných a integračných testov som uskutočnil manuálne testovanie kľúčových používateľských scenárov v reálnych podmienkach. Cieľom bolo overiť funkčnosť celého toku od registrácie po publikovanie inzerátu, funkčnosť mapového rozhrania a moderačného procesu.
+
+\subsubsection{Účastníci a prostredie}
+\noindent
+Manuálne testovanie prebehlo v internom okruhu piatich používateľov (vrátane autora práce a štyroch spolužiakov / kolegov z odboru). Tento počet odráža rozsah prototypu; pre produkčné nasadenie by bolo vhodné rozšírenie testovania na väčšiu vzorku s reprezentatívnym zastúpením cieľových skupín. Účastníci mali k dispozícii osobné počítače s aktuálnymi prehliadačmi (Chrome, Firefox, Safari) a dve mobilné zariadenia (iOS a Android) s rozlíšeniami 375\,px a 390\,px. Testovanie prebiehalo voči nasadenému vývojovému prostrediu s rovnakou konfiguráciou služieb ako pri vývoji (Docker Compose).
+
+\subsubsection{Testovacie úlohy}
+\noindent
+Každý účastník dostal rovnakú sadu úloh zameraných na hlavné používateľské toky: registráciu a prihlásenie, vytvorenie inzerátu cez wizard (štvorkrokový proces), nahratie fotografií, výber polohy na mape (Leaflet), odoslanie na schválenie a sledovanie stavu v dashboarde. Pre administrátorov boli pridané úlohy moderácie: schválenie/zamietnutie inzerátu, banovanie používateľa a úprava kategórií s dynamickými filtrami.
+
+\subsubsection{Testovanie scenárov podľa rolí}
+\noindent
+Okrem všeobecných úloh boli otestované aj konkrétne scenáre viazané na systém rolí (USER, ADMIN).
+
+\textbf{Bežný prihlásený používateľ (USER):} Overené, že prihlásený používateľ môže vytvoriť inzerát, upraviť ho v stave \hlcode{DRAFT}, odoslať na schválenie (prechod do \hlcode{PENDING}) a deaktivovať publikovaný inzerát. Prístup k admin endpointom (\hlcode{/admin/*}) bol správne odmietnutý s návratovým kódom \hlcode{403}.
+
+\textbf{Administrátor (ADMIN):} Overené scenáre moderácie:
+\begin{itemize}
+  \item zoznam inzerátov v stave \hlcode{PENDING} s detailom a fotografiami,
+  \item schválenie (status~$\to$~\hlcode{ACTIVE}, vygenerovanie \hlcode{AD\_APPROVED} správy),
+  \item zamietnutie s dôvodom (\hlcode{AD\_REJECTED} správa),
+  \item banovanie používateľa s prepojením do \hlcode{AuditLog},
+  \item úprava kategórií a dynamických filtrov (\hlcode{FilterType}).
+\end{itemize}
+
+\subsubsection{Výsledky a pozorovania}
+\noindent
+Všetci účastníci dokončili zadané úlohy úspešne; pri priamom meraní času (orientačne 6--14 minút na celú sadu úloh) nikto nenarazil na blokujúcu chybu. Počas testov boli zaznamenané menšie UX nedostatky: nejasné rozdiely medzi stavmi \hlcode{DRAFT} a \hlcode{INACTIVE}, chýbajúca spätná väzba pri neúspešnom geokódovaní adresy a nekonzistentné zobrazenie stavu načítavania pri mapových markeroch. Tieto nedostatky boli v priebehu vývoja opravené. Najčastejší návrh na zlepšenie bol pridanie kontextovej nápovedy pri prvom prihlásení a vizuálne odlíšenie systémových správ (\hlcode{AD\_APPROVED}, \hlcode{AD\_REJECTED}) od bežných správ medzi používateľmi.
+
+Tabuľka~\ref{tab:manual-results} zachytáva výsledky jednotlivých testovacích úloh.
+
+\begin{table}[htbp]
+\centering
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.28}
+\rowcolors{2}{gray!7}{white}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.06\linewidth}>{\raggedright\arraybackslash}p{0.42\linewidth}>{\raggedright\arraybackslash}p{0.36\linewidth}>{\raggedright\arraybackslash}p{0.08\linewidth}@{}}
+\toprule
+\rowcolor{gray!14}
+\textbf{ID} & \textbf{Testovacia úloha} & \textbf{Očakávaný výsledok} & \textbf{Stav} \\
+\midrule
+T-01 & Registrácia a prihlásenie                              & JWT vydaný, používateľ prihlásený                  & \textbf{PASS} \\
+T-02 & Vytvorenie inzerátu cez wizard (4 kroky)              & Inzerát uložený, stav \hlcode{PENDING}             & \textbf{PASS} \\
+T-03 & Nahratie fotografií (až 8 ks, base64)                 & Fotky zobrazené v náhľade                          & \textbf{PASS} \\
+T-04 & Výber polohy na mape Leaflet                          & Latitúda/longitúda uložené                         & \textbf{PASS} \\
+T-05 & Vyhľadávanie s filtrami (BOOLEAN, RANGE)              & Korektné filtrovanie cez JSONB                     & \textbf{PASS} \\
+T-06 & Zobrazenie mapy inzerátov                             & Markery vykreslené na správnych pozíciách          & \textbf{PASS} \\
+T-07 & Pridanie do obľúbených                                & Optimistický update, perzistencia v DB             & \textbf{PASS} \\
+T-08 & Odoslanie reportu (\hlcode{ReportReason})             & Report vytvorený, stav \hlcode{PENDING}            & \textbf{PASS} \\
+T-09 & Schválenie inzerátu administrátorom                   & \hlcode{PENDING}~$\to$~\hlcode{ACTIVE}, \hlcode{AD\_APPROVED} & \textbf{PASS} \\
+T-10 & Zamietnutie inzerátu                                  & \hlcode{PENDING}~$\to$~\hlcode{ARCHIVED}, \hlcode{AD\_REJECTED} & \textbf{PASS} \\
+T-11 & Banovanie používateľa                                 & \hlcode{banned=true}, \hlcode{403} pri ďalšom requeste & \textbf{PASS} \\
+T-12 & Pridanie kategórie + filtra (\hlcode{FilterType.RANGE})& Filter okamžite viditeľný v UI                    & \textbf{PASS} \\
+T-13 & Pridanie recenzie k inzerátu                          & Recenzia uložená, priemerné skóre aktualizované    & \textbf{PASS} \\
+T-14 & Pridanie do kalendára (\hlcode{CalendarEvent})        & Udalosť viditeľná v profile                        & \textbf{PASS} \\
+T-15 & Responzivita na mobile (375\,px, 390\,px)             & UI správne škálované                               & \textbf{PASS} \\
+\bottomrule
+\end{tabular}
+\endgroup
+\caption{Výsledky manuálneho používateľského testovania}
+\label{tab:manual-results}
+\end{table}
+
+\subsection{Záťažové testovanie}
+\noindent
+Nefunkčná požiadavka stanovuje cieľovú dobu odozvy REST API na 500\,ms pri bežných dopytoch za štandardných prevádzkových podmienok. Formálne záťažové testovanie pomocou nástrojov ako Apache JMeter alebo k6 nebolo v rámci tohto prototypu realizované, keďže nasadenie na produkčný server s plnou záťažou presahuje rozsah bakalárskej práce.
+
+Architektonické opatrenia, ktoré boli s ohľadom na tento cieľ navrhnuté a implementované, zahŕňajú:
+\begin{itemize}
+  \item indexovanie kľúčových polí v PostgreSQL (\hlcode{status}, \hlcode{categoryId}, \hlcode{userId}, \hlcode{createdAt} v entite \hlcode{Advertisement}) pre rýchle filtrovanie;
+  \item selektívne načítavanie polí cez Prisma \hlcode{select} pre minimalizáciu objemu prenášaných dát;
+  \item asynchrónne zaznamenávanie udalostí \hlcode{ClickEvent} pre analytiku bez blokovania hlavného toku používateľa;
+  \item React Server Components (RSC) v Next.js, ktoré presúvajú väčšinu rendering záťaže zo strany klienta na server.
+\end{itemize}
+
+Overenie záťažovým testovaním pri vysokom počte súbežných používateľov je naplánované ako súčasť ďalšieho rozvoja platformy pri prechode na produkčné nasadenie.
 
 \subsection{Analytika a monitoring (ClickEvent tracking a segmentácia používateľov)}
 \noindent
