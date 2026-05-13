@@ -1080,7 +1080,7 @@ Ako úložisko dát som zvolil PostgreSQL, čo je pokročilá open-source objekt
 \begin{itemize}
   \item \textbf{Spoľahlivosť a integrita:} PostgreSQL striktne dodržiava princípy ACID (\emph{Atomicity}, \emph{Consistency}, \emph{Isolation}, \emph{Durability}) \parencite{obe2017postgresql}, čo je nevyhnutné pri operáciách, ako je registrácia používateľa alebo spracovanie správ, kde nesmie dôjsť k strate či poškodeniu dát.
   \item \textbf{Podpora geografických dát:} Vzhľadom na to, že platforma využíva mapové podklady, PostgreSQL je ideálnou voľbou vďaka svojej schopnosti efektívne pracovať so súradnicami a priestorovými dopytmi.
-  \item \textbf{Výkon pri vyhľadávaní:} Databáza umožňuje vytvárať indexy nad kľúčovými poľami (napr. \hlcode{slug}, \hlcode{categoryId}, \hlcode{createdAt}), čo zabezpečuje bleskovú odozvu pri filtrovaní tisícok inzerátov.
+  \item \textbf{Výkon pri vyhľadávaní:} Databáza umožňuje vytvárať indexy nad kľúčovými poľami (napr.\ \hlcode{userId}, \hlcode{status}, \hlcode{categoryId} či \hlcode{createdAt} v entite \hlcode{Advertisement}, alebo \hlcode{slug} v entite \hlcode{Category}), čo zabezpečuje bleskovú odozvu pri filtrovaní tisícok inzerátov.
   \item \textbf{Flexibilita s JSONB:} Využitie typu JSONB v PostgreSQL mi umožňuje ukladať dynamické parametre inzerátov (špecifikácie) s vysokým výkonom, pričom nad týmito dátami je možné vykonávať efektívne dopyty takmer rovnako rýchlo ako nad klasickými stĺpcami.
 \end{itemize}
 
@@ -1174,7 +1174,7 @@ Efektívny vývoj softvéru vyžaduje nielen kvalitný kód, ale aj spoľahlivé
 Systém Git je základným nástrojom na sledovanie zmien v zdrojovom kóde \parencite{winters2020swe}. V kontexte monorepa je jeho dôležitosť ešte vyššia, nakoľko spravuje históriu viacerých aplikácií a zdieľaných balíkov súčasne.
 
 \begin{itemize}
-  \item \textbf{Vetvenie (\emph{Branching strategy}):} Pri vývoji využívam logické rozdelenie funkcií do samostatných vetiev (napr. \hlcode{feature/auth}, \hlcode{feature/map-logic}). To umožňuje experimentovať s novými funkciami bez rizika narušenia stability hlavnej vetvy (\hlcode{main}).
+  \item \textbf{Vetvenie (\emph{Branching strategy}):} Vývoj prebieha primárne na hlavnej vetve (\hlcode{main}), pričom Git umožňuje pri väčších zmenách vytvárať samostatné vetvy pre jednotlivé funkcie (napr.\ \hlcode{feature/auth} pre autentifikáciu alebo \hlcode{feature/map-logic} pre mapovú logiku), čo umožňuje experimentovať s novými funkciami bez rizika narušenia stability hlavnej vetvy.
   \item \textbf{História a audit:} Git uchováva detailný prehľad o tom, kedy a prečo bola konkrétna zmena vykonaná. To je kľúčové pri hľadaní chýb (\emph{debugging}) alebo pri návrate k predchádzajúcej stabilnej verzii aplikácie.
   \item \textbf{Ignorovanie súborov (\hlcode{.gitignore}):} Pomocou tohto súboru zabezpečujem, že sa do repozitára nedostanú zbytočné dáta (napríklad vygenerované priečinky \hlcode{node\_modules}) alebo citlivé údaje (ako sú konfiguračné súbory \hlcode{.env}).
 \end{itemize}
@@ -1273,7 +1273,7 @@ Tento modul je zodpovedný za bezpečnosť a správu identít. Implementácia vy
   \item \textbf{Zabezpečenie:} Na ochranu endpointov som vytvoril globálne guardy. \hlcode{JwtAuthGuard} extrahuje token z hlavičky HTTP požiadavky a validuje ho, zatiaľ čo \hlcode{RolesGuard} v spolupráci s dekorátorom \hlcode{@Roles()} kontroluje úroveň oprávnení (napr.\ prístup k mazaniu používateľov).
 \end{itemize}
 
-\subsubsection{Modul Ads: Správa inzerátov a médií}
+\subsubsection{Modul Advertisements: Správa inzerátov a médií}
 \noindent
 Modul \hlcode{AdvertisementsModule} je najrozsiahlejšou časťou backendu, nakoľko spracováva hlavnú entitu systému -- inzerát.
 
@@ -1371,7 +1371,7 @@ Aplikácia \hlcode{apps/platform} je vstupnou bránou celej platformy a je optim
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.7\textwidth]{images/filters.png}
-\caption{Panel dynamických filtrov -- vstupy generované podľa konfigurácie kategórie (typ \texttt{TEXT}, \texttt{NUMBER}, \texttt{SELECT}, \texttt{MULTISELECT})}
+\caption{Panel dynamických filtrov -- vstupy generované podľa konfigurácie kategórie (typy \texttt{TEXT}, \texttt{NUMBER}, \texttt{SELECT}, \texttt{MULTISELECT}, \texttt{BOOLEAN}, \texttt{DATE}, \texttt{RANGE})}
 \label{fig:filters}
 \end{figure}
 
@@ -1435,7 +1435,7 @@ Posledný krok sprievodcu zhromažďuje geografické údaje cez interaktívnu ma
 \label{fig:inzerat-4}
 \end{figure}
 
-\textbf{Správa inzerátov:} Dashboard používateľa zobrazuje všetky jeho inzeráty vrátane ich aktuálneho stavu (\hlcode{PENDING}, \hlcode{ACTIVE}, \hlcode{ARCHIVED}) a štatistík zobrazení. Používateľ môže inzeráty editovať, deaktivovať alebo zmazať. Prehľadovú stránku profilu predajcu so zoznamom jeho aktívnych inzerátov dokumentuje obrázok~\ref{fig:profile-inzerat}.
+\textbf{Správa inzerátov:} Dashboard používateľa zobrazuje všetky jeho inzeráty vrátane ich aktuálneho stavu (\hlcode{PENDING}~--~čakajúci na schválenie, \hlcode{DRAFT}~--~rozpracovaný koncept, \hlcode{ACTIVE}~--~viditeľný, \hlcode{INACTIVE}~--~deaktivovaný používateľom, \hlcode{ARCHIVED}~--~archivovaný) a štatistík zobrazení. Používateľ môže inzeráty editovať, deaktivovať alebo zmazať. Prehľadovú stránku profilu predajcu so zoznamom jeho aktívnych inzerátov dokumentuje obrázok~\ref{fig:profile-inzerat}.
 
 \begin{figure}[htbp]
 \centering
@@ -1464,12 +1464,12 @@ Okrem viacstupňového sprievodcu poskytuje aplikácia aj klasický jednostranov
 
 \textbf{Obľúbené položky:} Stránka zobrazuje inzeráty uložené používateľom do obľúbených. Pridávanie a odoberanie z obľúbených je realizované optimistickým UI updatem -- tlačidlo reaguje okamžite bez čakania na odpoveď servera, čo zvyšuje vnímaný výkon.
 
-\textbf{Platby a transakcie:} Sekcia platieb v používateľskej zóne agreguje finančné transakcie nad inzerátmi v dvoch perspektívach -- prijaté platby (pohľad vlastníka/\hlcode{owner}) a uskutočnené platby (pohľad záujemcu/\hlcode{renter}). Každá transakcia obsahuje výšku sumy, stav (\hlcode{PaymentStatus}), obdobie prenájmu a referenciu na konkrétny inzerát. Prehľadovú obrazovku zobrazuje obrázok~\ref{fig:platba-1}, detail jednotlivej platby s časovou osou stavov je dokumentovaný na obrázku~\ref{fig:platby-2}.
+\textbf{Predajné balíky a platby:} Aplikácia podporuje štyri úrovne predajného plánu (\hlcode{SellerPlan}) -- \hlcode{STANDARD} (zdarma), \hlcode{PLUS} (8,99\,€/mesiac), \hlcode{PRO} (16,99\,€/mesiac) a \hlcode{FIRMA} (39\,€/mesiac) -- ktoré sa líšia počtom prioritných inzerátov, mierou zvýraznenia vo vyhľadávaní a rozsahom analytických funkcií. Výber balíka je dostupný priamo v používateľskej zóne (obr.~\ref{fig:platba-1}). Detail jednotlivej platby so sumou, obdobím a referenciou na inzerát, vrátane stavu definovaného enumerátorom \hlcode{PaymentStatus} (\hlcode{PENDING}, \hlcode{COMPLETED}, \hlcode{FAILED}, \hlcode{CANCELLED}, \hlcode{REFUNDED}), je dokumentovaný na obrázku~\ref{fig:platby-2}.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/platba-1.png}
-\caption{Modul platieb -- prehľad transakcií používateľa s filtrovaním podľa stavu (\texttt{PENDING}, \texttt{COMPLETED}, \texttt{FAILED}, \texttt{CANCELLED}, \texttt{REFUNDED})}
+\caption{Výber predajného balíka -- štyri úrovne \texttt{SellerPlan} (Štandard~--~0\,€/mesiac, Plus~--~8,99\,€/mesiac, RentMe Pro~--~16,99\,€/mesiac, Firma~--~39\,€/mesiac) s porovnaním funkcií a viditeľnosti inzerátov}
 \label{fig:platba-1}
 \end{figure}
 
@@ -1504,7 +1504,7 @@ Po úspešnej autentifikácii je administrátor presmerovaný na hlavnú násten
 
 \textbf{Vizuálny editor GrapesJS:} Na správu statických stránok a blogových príspevkov som integroval open-source editor GrapesJS. Umožňuje administrátorovi vytvárať a upravovať HTML obsah stránok drag-and-drop spôsobom bez znalosti HTML kódu. Výsledný HTML kód je uložený do databázy a zobrazovaný na verejnej platforme. Aj tu bolo potrebné riešiť kompatibilitu s SSR pomocou asynchrónneho načítavania modulu cez \hlcode{next/dynamic} s voľbou \hlcode{ssr:\,false}, ktorá zaručuje inicializáciu editora výhradne v prehliadači.
 
-\textbf{Správa kategórií a filtrov:} Admin panel umožňuje vytvárať a editovať hierarchiu kategórií (hlavné kategórie, podkategórie) a priraďovať im dynamické filtre. Každý filter má definovaný typ (\hlcode{TEXT}, \hlcode{NUMBER}, \hlcode{SELECT}), názov a poradie zobrazenia. Zmeny sa okamžite premietnu do vyhľadávacieho panela na verejnej platforme bez nutnosti nasadenia novej verzie aplikácie.
+\textbf{Správa kategórií a filtrov:} Admin panel umožňuje vytvárať a editovať hierarchiu kategórií (hlavné kategórie, podkategórie) a priraďovať im dynamické filtre. Každý filter má definovaný typ z enumerátora \hlcode{FilterType}~--~\hlcode{TEXT} (Text), \hlcode{NUMBER} (Číslo), \hlcode{SELECT} (Výber jednej možnosti), \hlcode{MULTISELECT} (Výber viacerých možností), \hlcode{BOOLEAN} (Áno/Nie), \hlcode{DATE} (Dátum) a \hlcode{RANGE} (Rozsah)~--~spolu s názvom, popisom a poradím zobrazenia. Zmeny sa okamžite premietnu do vyhľadávacieho panela na verejnej platforme bez nutnosti nasadenia novej verzie aplikácie.
 
 \textbf{Analytický dashboard:} Panel štatistík zobrazuje grafy kliknutí na inzeráty v čase, rozdelenie záujmu podľa kategórií a segmentáciu podľa typu používateľa (obr.~\ref{fig:admin-stats}). Dáta pochádzajú z tabuľky \hlcode{ClickEvent}, ktorá je plnená asynchrónne pri každom zobrazení detailu inzerátu \parencite{winters2020swe}. Časové obdobie štatistík je prepínateľné medzi 7 dňami, 30 dňami a 3 mesiacmi, pričom interaktívny tooltip umožňuje sledovať presné hodnoty v konkrétnom dni.
 
