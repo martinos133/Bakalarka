@@ -1,0 +1,118 @@
+% State diagram životného cyklu inzerátu (AdvertisementStatus)
+\begin{tikzpicture}[
+  font=\rmfamily\small,
+  line cap=round, line join=round,
+  >=Stealth,
+  state/.style={
+    rectangle, rounded corners=8pt,
+    minimum width=3.6cm, minimum height=1.55cm,
+    align=center, inner sep=4pt,
+    line width=0.6pt,
+    font=\rmfamily\small
+  },
+  draftst/.style={state, draw=gray!60!black!70, fill=gray!12!white},
+  pendingst/.style={state, draw=yellow!55!black!75, fill=yellow!18!white},
+  activest/.style={state, draw=teal!55!black!80, fill=teal!14!white},
+  inactivest/.style={state, draw=orange!70!black!70, fill=orange!14!white},
+  archivedst/.style={state, draw=red!60!black!70, fill=red!12!white},
+  startend/.style={circle, fill=black, inner sep=2pt, minimum size=8pt},
+  trans/.style={->, line width=0.6pt, draw=black!60, shorten >=2pt, shorten <=2pt},
+  edgelbl/.style={font=\rmfamily\scriptsize, fill=white, inner sep=1.5pt, text=black!75, align=center}
+]
+
+% =========================================================================
+% Layout (vertikálny portrait, široký 14 cm)
+% =========================================================================
+
+% Štart
+\node[startend, label={[font=\rmfamily\footnotesize]above:Štart}] (start) at (0, 0) {};
+
+% Riadok 1: DRAFT (vľavo) a PENDING (vpravo)
+\node[draftst]   (draft)   at (-4.2, -2.8) {%
+  \textbf{DRAFT}\\[2pt]
+  \footnotesize Rozpracovaný\\
+  \footnotesize koncept (uložený)
+};
+
+\node[pendingst] (pending) at ( 4.2, -2.8) {%
+  \textbf{PENDING}\\[2pt]
+  \footnotesize Čaká na schválenie\\
+  \footnotesize administrátorom
+};
+
+% Riadok 2: INACTIVE (vľavo) a ACTIVE (vpravo)
+\node[inactivest] (inactive) at (-4.2, -6.5) {%
+  \textbf{INACTIVE}\\[2pt]
+  \footnotesize Deaktivovaný\\
+  \footnotesize používateľom
+};
+
+\node[activest]   (active)   at ( 4.2, -6.5) {%
+  \textbf{ACTIVE}\\[2pt]
+  \footnotesize Schválený,\\
+  \footnotesize viditeľný verejne
+};
+
+% Riadok 3: ARCHIVED (stred)
+\node[archivedst] (archived) at (0, -10.5) {%
+  \textbf{ARCHIVED}\\[2pt]
+  \footnotesize Zamietnutý / expirovaný\\
+  \footnotesize (nevyhľadateľný)
+};
+
+% Koncový stav
+\node[startend, label={[font=\rmfamily\footnotesize]below:Koniec}] (end) at (0, -12.5) {};
+
+% =========================================================================
+% Prechody
+% =========================================================================
+% Štart -> DRAFT
+\draw[trans] (start.south) .. controls +(south west:1.0) and +(north:0.5) ..
+  node[edgelbl, pos=0.5] {používateľ\\ vytvorí koncept} (draft.north);
+
+% Štart -> PENDING
+\draw[trans] (start.south) .. controls +(south east:1.0) and +(north:0.5) ..
+  node[edgelbl, pos=0.5] {wizard\\ rovno odošle} (pending.north);
+
+% DRAFT -> PENDING
+\draw[trans] (draft.east) -- node[edgelbl, pos=0.5] {odoslať\\ na schválenie} (pending.west);
+
+% PENDING -> ACTIVE
+\draw[trans] (pending.south) -- node[edgelbl, pos=0.5, right] {admin:\\ \texttt{approve()}} (active.north);
+
+% PENDING -> ARCHIVED (oblúk vpravo)
+\draw[trans] (pending.east) .. controls +(east:2.5) and +(east:2.0) ..
+  node[edgelbl, pos=0.5] {admin: \texttt{reject()}} (archived.east);
+
+% ACTIVE <-> INACTIVE (dva paralelné šípy)
+\draw[trans] ($(active.west)+(0,0.35)$) -- node[edgelbl, pos=0.5, above] {používateľ deaktivuje} ($(inactive.east)+(0,0.35)$);
+\draw[trans] ($(inactive.east)+(0,-0.35)$) -- node[edgelbl, pos=0.5, below] {používateľ znovu aktivuje} ($(active.west)+(0,-0.35)$);
+
+% ACTIVE -> ARCHIVED
+\draw[trans] (active.south) .. controls +(south:0.8) and +(north east:0.8) ..
+  node[edgelbl, pos=0.5] {expirácia /\\ archív} (archived.north east);
+
+% INACTIVE -> ARCHIVED
+\draw[trans] (inactive.south) .. controls +(south:0.8) and +(north west:0.8) ..
+  node[edgelbl, pos=0.5] {vymazanie} (archived.north west);
+
+% ARCHIVED -> Koniec
+\draw[trans] (archived.south) -- (end.north);
+
+% =========================================================================
+% Legenda dolu (centered pod end)
+% =========================================================================
+\node[draw=black!35, fill=white, rounded corners=2pt, inner sep=5pt,
+      font=\rmfamily\scriptsize, align=left, anchor=north]
+  at (0, -13.4)
+{%
+  \textbf{Legenda stavov} \quad
+  \tikz\draw[fill=gray!12!white, draw=gray!60!black!70, line width=0.4pt, rounded corners=1pt] (0,0) rectangle (0.32,0.2); \texttt{DRAFT} \quad
+  \tikz\draw[fill=yellow!18!white, draw=yellow!55!black!75, line width=0.4pt, rounded corners=1pt] (0,0) rectangle (0.32,0.2); \texttt{PENDING} \quad
+  \tikz\draw[fill=teal!14!white, draw=teal!55!black!80, line width=0.4pt, rounded corners=1pt] (0,0) rectangle (0.32,0.2); \texttt{ACTIVE} \quad
+  \tikz\draw[fill=orange!14!white, draw=orange!70!black!70, line width=0.4pt, rounded corners=1pt] (0,0) rectangle (0.32,0.2); \texttt{INACTIVE} \quad
+  \tikz\draw[fill=red!12!white, draw=red!60!black!70, line width=0.4pt, rounded corners=1pt] (0,0) rectangle (0.32,0.2); \texttt{ARCHIVED}\\[3pt]
+  \textit{Pozn.:} \texttt{approve()} vytvorí systémovú správu \texttt{AD\_APPROVED} pre vlastníka, \texttt{reject()} správu \texttt{AD\_REJECTED} (modul \texttt{Messages}).
+};
+
+\end{tikzpicture}

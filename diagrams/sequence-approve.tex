@@ -1,0 +1,182 @@
+% Sekvenčný diagram schválenia inzerátu - PATCH /advertisements/:id/approve
+\begin{tikzpicture}[
+  font=\rmfamily\scriptsize,
+  line cap=round, line join=round,
+  >=Stealth,
+  % --- štýly ---
+  lifeline/.style={line width=0.4pt, draw=black!40, dashed},
+  actorhead/.style={
+    rectangle, rounded corners=2pt,
+    minimum width=2.6cm, minimum height=0.7cm,
+    align=center, inner sep=2pt,
+    line width=0.5pt,
+    draw=red!55!black!70, fill=red!10!white,
+    font=\rmfamily\scriptsize\bfseries
+  },
+  partbox/.style={
+    rectangle, rounded corners=2pt,
+    minimum width=2.6cm, minimum height=0.7cm,
+    align=center, inner sep=2pt,
+    line width=0.5pt,
+    draw=blue!55!black!70, fill=blue!8!white,
+    font=\rmfamily\scriptsize\bfseries
+  },
+  guardbox/.style={
+    partbox,
+    draw=violet!55!black!70, fill=violet!8!white
+  },
+  dbbox/.style={
+    partbox,
+    draw=teal!55!black!70, fill=teal!8!white
+  },
+  call/.style={->, line width=0.5pt, draw=black!70, shorten >=1.5pt, shorten <=1.5pt},
+  retcall/.style={->, line width=0.4pt, draw=black!55, dashed, shorten >=1.5pt, shorten <=1.5pt},
+  asynccall/.style={->, line width=0.45pt, draw=teal!55!black!80, shorten >=1.5pt, shorten <=1.5pt},
+  msglbl/.style={font=\rmfamily\scriptsize, fill=white, inner sep=1.2pt, text=black!75, align=center},
+  activation/.style={fill=blue!12!white, draw=blue!55!black!60, line width=0.3pt},
+  altframe/.style={draw=red!60!black!60, line width=0.4pt, dashed, rounded corners=1pt}
+]
+
+% =========================================================================
+% Lifelines (7 stĺpcov) — pozície X
+% =========================================================================
+\def\xA{0}        % Admin
+\def\xB{2.6}      % Controller
+\def\xC{5.2}      % Guard
+\def\xD{7.8}      % Service
+\def\xE{10.4}     % Prisma
+\def\xF{13.0}     % MessagesService
+\def\xG{15.6}     % Vlastník
+
+% Hlavičky (lifeline boxes hore)
+\node[actorhead] (admin)  at (\xA, 0) {Admin};
+\node[partbox]   (ctrl)   at (\xB, 0) {Advertisements\\Controller};
+\node[guardbox]  (guard)  at (\xC, 0) {JwtAuthGuard\\+ RolesGuard};
+\node[partbox]   (svc)    at (\xD, 0) {Advertisements\\Service};
+\node[dbbox]     (prisma) at (\xE, 0) {PrismaService\\(PostgreSQL)};
+\node[partbox]   (msgsvc) at (\xF, 0) {Messages\\Service};
+\node[actorhead] (owner)  at (\xG, 0) {Vlastník\\inzerátu};
+
+% Lifelines (zvislé čiary)
+\def\yBottom{-17.5}
+\foreach \x in {\xA, \xB, \xC, \xD, \xE, \xF, \xG} {
+  \draw[lifeline] (\x, -0.45) -- (\x, \yBottom);
+}
+
+% =========================================================================
+% Activation bars (zvislé pruhy na lifeline) - pridáme pre ctrl a svc
+% =========================================================================
+\fill[activation] (\xB - 0.08, -1.0) rectangle (\xB + 0.08, -17.0);
+\fill[activation] (\xD - 0.08, -3.4) rectangle (\xD + 0.08, -16.5);
+
+% =========================================================================
+% Postupnosť volaní
+% =========================================================================
+
+% 1. Admin -> Controller: PATCH
+\draw[call] (\xA, -1.0) -- (\xB - 0.08, -1.0);
+\node[msglbl, anchor=south] at ({(\xA+\xB)/2}, -1.0)
+  {\textbf{1:} PATCH /advertisements/:id/approve \quad (\,Authorization: Bearer \textless JWT\textgreater\,)};
+
+% 2. Controller -> Guard: canActivate
+\draw[call] (\xB + 0.08, -1.9) -- (\xC, -1.9);
+\node[msglbl, anchor=south] at ({(\xB+\xC)/2}, -1.9) {\textbf{2:} canActivate(request)};
+
+% 3. Guard interne (self-loop)
+\draw[call, shorten >=0pt] (\xC, -2.4) -- ++(0.5, 0) -- ++(0, -0.4) -- ++(-0.5, 0);
+\node[msglbl, anchor=west] at (\xC + 0.55, -2.6) {\textbf{3:} overí podpis tokenu \& rolu = ADMIN};
+
+% 4. Guard -> Controller: user
+\draw[retcall] (\xC, -3.0) -- (\xB + 0.08, -3.0);
+\node[msglbl, anchor=south] at ({(\xB+\xC)/2}, -3.0) {\textbf{4:} user \{ sub, role: ADMIN \}};
+
+% 5. Controller -> Service: approve(id)
+\draw[call] (\xB + 0.08, -3.85) -- (\xD - 0.08, -3.85);
+\node[msglbl, anchor=south] at ({(\xB+\xD)/2}, -3.85) {\textbf{5:} approve(id)};
+
+% 6. Service -> Prisma: findUnique
+\draw[call] (\xD + 0.08, -4.7) -- (\xE, -4.7);
+\node[msglbl, anchor=south] at ({(\xD+\xE)/2}, -4.7) {\textbf{6:} findUnique(\{ where: \{ id \} \})};
+
+% 7. Prisma -> Service: Advertisement | null
+\draw[retcall] (\xE, -5.3) -- (\xD + 0.08, -5.3);
+\node[msglbl, anchor=south] at ({(\xD+\xE)/2}, -5.3) {\textbf{7:} Advertisement | null};
+
+% alt rámec 1: ak null
+\draw[altframe] (\xD - 0.4, -5.8) rectangle (\xB + 0.4, -6.9);
+\node[anchor=north west, font=\rmfamily\scriptsize\bfseries, text=red!60!black!70]
+  at (\xD - 0.4, -5.8) {\,alt\,\itshape ad == null\,};
+
+\draw[retcall] (\xD - 0.08, -6.4) -- (\xB + 0.08, -6.4);
+\node[msglbl, anchor=south] at ({(\xB+\xD)/2}, -6.4) {\textbf{8a:} throw NotFoundException};
+
+\draw[retcall] (\xB - 0.08, -6.75) -- (\xA, -6.75);
+\node[msglbl, anchor=south] at ({(\xA+\xB)/2}, -6.75) {\textbf{8b:} 404 Not Found};
+
+% alt rámec 2: status != PENDING
+\draw[altframe] (\xD - 0.4, -7.4) rectangle (\xB + 0.4, -8.5);
+\node[anchor=north west, font=\rmfamily\scriptsize\bfseries, text=red!60!black!70]
+  at (\xD - 0.4, -7.4) {\,alt\,\itshape status $\neq$ PENDING\,};
+
+\draw[retcall] (\xD - 0.08, -8.0) -- (\xB + 0.08, -8.0);
+\node[msglbl, anchor=south] at ({(\xB+\xD)/2}, -8.0) {\textbf{9a:} throw ForbiddenException};
+
+\draw[retcall] (\xB - 0.08, -8.35) -- (\xA, -8.35);
+\node[msglbl, anchor=south] at ({(\xA+\xB)/2}, -8.35) {\textbf{9b:} 403 Forbidden};
+
+% Hlavná vetva: OK
+\node[anchor=north west, font=\rmfamily\scriptsize\bfseries, text=teal!55!black!70]
+  at (-0.4, -9.0) {\,else \itshape OK -- inzerát existuje a je PENDING\,};
+
+% 10. Service -> Prisma: update
+\draw[call] (\xD + 0.08, -9.6) -- (\xE, -9.6);
+\node[msglbl, anchor=south] at ({(\xD+\xE)/2}, -9.6) {\textbf{10:} update(\{ status: 'ACTIVE' \})};
+
+% 11. Prisma -> Service: updated
+\draw[retcall] (\xE, -10.2) -- (\xD + 0.08, -10.2);
+\node[msglbl, anchor=south] at ({(\xD+\xE)/2}, -10.2) {\textbf{11:} updated Advertisement};
+
+% 12. Service -> MessagesService
+\draw[call] (\xD + 0.08, -11.1) -- (\xF, -11.1);
+\node[msglbl, anchor=south] at ({(\xD+\xF)/2}, -11.1)
+  {\textbf{12:} createSystemMessage(ownerId, 'AD\_APPROVED', \dots)};
+
+% 13. MessagesService -> Prisma: create Message
+\draw[call] (\xF, -11.9) -- (\xE, -11.9);
+\node[msglbl, anchor=south] at ({(\xE+\xF)/2}, -11.9) {\textbf{13:} create Message};
+
+% 14. Prisma -> MessagesService: created Message
+\draw[retcall] (\xE, -12.5) -- (\xF, -12.5);
+\node[msglbl, anchor=south] at ({(\xE+\xF)/2}, -12.5) {\textbf{14:} created Message};
+
+% 15. MessagesService -> Owner (async notifikácia)
+\draw[asynccall] (\xF, -13.3) -- (\xG, -13.3);
+\node[msglbl, anchor=south] at ({(\xF+\xG)/2}, -13.3) {\textbf{15:} notifikácia v Inboxe (async)};
+
+% 16. MessagesService -> Service: OK
+\draw[retcall] (\xF, -14.1) -- (\xD + 0.08, -14.1);
+\node[msglbl, anchor=south] at ({(\xD+\xF)/2}, -14.1) {\textbf{16:} OK};
+
+% 17. Service -> Controller: updated Advertisement
+\draw[retcall] (\xD - 0.08, -14.95) -- (\xB + 0.08, -14.95);
+\node[msglbl, anchor=south] at ({(\xB+\xD)/2}, -14.95) {\textbf{17:} updated Advertisement};
+
+% 18. Controller -> Admin: 200 OK
+\draw[retcall] (\xB - 0.08, -16.0) -- (\xA, -16.0);
+\node[msglbl, anchor=south] at ({(\xA+\xB)/2}, -16.0) {\textbf{18:} 200 OK \{ \dots updatedAd \}};
+
+% =========================================================================
+% Legenda dolu (vystrihnuté zo zvyšku)
+% =========================================================================
+\node[draw=black!35, fill=white, rounded corners=2pt, inner sep=4pt,
+      font=\rmfamily\tiny, align=left, anchor=north west]
+  at (\xA - 0.3, \yBottom + 0.4)
+{%
+  \textbf{Legenda}\\[1pt]
+  \tikz\draw[->, line width=0.5pt, draw=black!70] (0,0) -- (0.6,0); \ synchrónne volanie\\
+  \tikz\draw[->, line width=0.4pt, draw=black!55, dashed] (0,0) -- (0.6,0); \ návratová hodnota\\
+  \tikz\draw[->, line width=0.45pt, draw=teal!55!black!80] (0,0) -- (0.6,0); \ asynchrónne volanie\\
+  \tikz\draw[draw=red!60!black!60, line width=0.4pt, dashed] (0,0) rectangle (0.6,0.2); \ alt fragment (vetvenie)
+};
+
+\end{tikzpicture}

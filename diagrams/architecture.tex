@@ -1,0 +1,165 @@
+% Komponentová architektúra systému RentMe (portrait)
+\begin{tikzpicture}[
+  font=\rmfamily\small,
+  line cap=round, line join=round,
+  >=Stealth,
+  node distance=0.6cm and 0.5cm,
+  % Klient (prehliadač) — modrý
+  client/.style={
+    rectangle, rounded corners=6pt,
+    minimum width=4.5cm, minimum height=1.0cm,
+    align=center, inner sep=4pt,
+    line width=0.6pt,
+    draw=blue!55!black!75, fill=blue!10!white,
+    font=\rmfamily\bfseries\small
+  },
+  % Frontendy — zelené
+  frontend/.style={
+    rectangle, rounded corners=4pt,
+    minimum width=3.6cm, minimum height=1.55cm,
+    align=center, inner sep=3pt,
+    line width=0.6pt,
+    draw=teal!55!black!80, fill=teal!10!white,
+    font=\rmfamily\small
+  },
+  % Backend — oranžový
+  backend/.style={
+    rectangle, rounded corners=5pt,
+    minimum width=12.6cm, minimum height=3.2cm,
+    align=center, inner sep=4pt,
+    line width=0.6pt,
+    draw=orange!70!black!70, fill=orange!8!white
+  },
+  modulebox/.style={
+    rectangle, rounded corners=2pt,
+    minimum width=2.55cm, minimum height=0.55cm,
+    align=center, inner sep=2pt,
+    line width=0.4pt,
+    draw=orange!60!black!60, fill=white,
+    font=\rmfamily\footnotesize
+  },
+  % DB — fialová
+  database/.style={
+    cylinder, shape border rotate=90,
+    aspect=0.25,
+    minimum width=3.5cm, minimum height=1.4cm,
+    align=center, inner sep=2pt,
+    line width=0.6pt,
+    draw=violet!60!black!70, fill=violet!12!white,
+    font=\rmfamily\small
+  },
+  % Zdieľané balíky — sivé
+  pkgbox/.style={
+    rectangle, rounded corners=3pt,
+    minimum width=4.2cm, minimum height=1.05cm,
+    align=center, inner sep=3pt,
+    line width=0.5pt, dashed,
+    draw=black!55, fill=gray!8!white,
+    font=\rmfamily\footnotesize
+  },
+  % Šípky
+  arr/.style={->, line width=0.55pt, draw=black!55, shorten >=1pt, shorten <=1pt},
+  pkgarr/.style={->, line width=0.45pt, draw=gray!70, dashed, shorten >=1pt, shorten <=1pt},
+  edgelbl/.style={font=\rmfamily\scriptsize, fill=white, inner sep=1.2pt, text=black!70}
+]
+
+% =========================================================================
+% Docker Compose obálka (umiestnená pomocou fit na konci)
+% =========================================================================
+
+% RIADOK 1: Klient
+\node[client] (browser) at (0, 0) {Používateľ\\ (webový prehliadač)};
+
+% RIADOK 2: Tri frontendy
+\node[frontend] (platform) at (-4.7, -2.4) {%
+  \textbf{platform}\\[1pt]
+  \footnotesize Verejná platforma\\
+  \footnotesize Next.js 16 + RSC\\
+  \footnotesize \texttt{:3000}
+};
+\node[frontend] (userapp) at (0, -2.4) {%
+  \textbf{user}\\[1pt]
+  \footnotesize Používateľská zóna\\
+  \footnotesize Next.js + Tailwind\\
+  \footnotesize \texttt{:3001}
+};
+\node[frontend] (admin) at (4.7, -2.4) {%
+  \textbf{admin}\\[1pt]
+  \footnotesize Administračný panel\\
+  \footnotesize Next.js + GrapesJS\\
+  \footnotesize \texttt{:3002}
+};
+
+% RIADOK 3: Backend (API) - veľký box s vnútornými modulmi
+\node[backend] (api) at (0, -6.0) {};
+\node[anchor=north, font=\rmfamily\bfseries] at (api.north) {api -- NestJS (\texttt{:4000})};
+% Vnútorné moduly v mriežke 4×3
+\foreach \name/\x/\y in {%
+  Auth/-4.7/-5.7, Advertisements/-1.65/-5.7, Categories/1.4/-5.7, Filters/4.45/-5.7,
+  Messages/-4.7/-6.3, Reports/-1.65/-6.3, Reviews/1.4/-6.3, Favorites/4.45/-6.3,
+  Admin/-4.7/-6.9, Analytics/-1.65/-6.9, Audit/1.4/-6.9, CMS/4.45/-6.9
+}{
+  \node[modulebox] at (\x, \y) {\name};
+}
+
+% RIADOK 4: Databáza
+\node[database] (db) at (0, -9.0) {%
+  \textbf{PostgreSQL}\\[1pt]
+  \footnotesize \texttt{:5432}\\
+  \footnotesize (Docker volume)
+};
+
+% Bočná vrstva: Zdieľané balíky (vpravo dolu)
+\node[pkgbox] (pkgdb) at (5.5, -8.5) {%
+  \texttt{packages/database}\\
+  \footnotesize Prisma schéma, klient
+};
+\node[pkgbox] (pkgshared) at (5.5, -9.7) {%
+  \texttt{packages/shared}\\
+  \footnotesize DTO, TS typy
+};
+
+% =========================================================================
+% Šípky
+% =========================================================================
+\draw[arr] (browser.south west) .. controls +(south:0.6) and +(north:0.6) ..
+  node[edgelbl, pos=0.6] {HTTPS} (platform.north);
+\draw[arr] (browser.south) -- node[edgelbl, pos=0.5] {HTTPS} (userapp.north);
+\draw[arr] (browser.south east) .. controls +(south:0.6) and +(north:0.6) ..
+  node[edgelbl, pos=0.6] {HTTPS} (admin.north);
+
+\draw[arr] (platform.south) -- node[edgelbl, pos=0.55, right=2pt] {REST + JWT} ($(api.north)+(-4.7,0)$);
+\draw[arr] (userapp.south) -- node[edgelbl, pos=0.5, right=2pt] {REST + JWT} ($(api.north)+(0,0)$);
+\draw[arr] (admin.south) -- node[edgelbl, pos=0.55, right=2pt] {REST + JWT} ($(api.north)+(4.7,0)$);
+
+\draw[arr] (api.south) -- node[edgelbl, pos=0.5] {Prisma ORM} (db.north);
+
+% Zdieľané balíky → API + frontendy
+\draw[pkgarr] (pkgdb.west) .. controls +(west:0.6) and +(east:0.6) ..
+  node[edgelbl, pos=0.5] {npm workspace} (api.east);
+\draw[pkgarr] (pkgshared.west) -- ($(api.east)+(0,-0.4)$);
+
+% =========================================================================
+% Legenda dolu vľavo - väčší font (small) pre čitateľnosť
+% =========================================================================
+\node[draw=black!40, fill=white, rounded corners=3pt, inner sep=8pt,
+      font=\rmfamily\small, align=left, anchor=north west]
+  at (-8.6, -8.0)
+{%
+  \textbf{Legenda}\\[3pt]
+  \tikz\draw[fill=blue!10!white, draw=blue!55!black!75, line width=0.5pt] (0,0) rectangle (0.45,0.30); \ Klient (prehliadač)\\[1pt]
+  \tikz\draw[fill=teal!10!white, draw=teal!55!black!80, line width=0.5pt] (0,0) rectangle (0.45,0.30); \ Frontendová aplikácia\\[1pt]
+  \tikz\draw[fill=orange!8!white, draw=orange!70!black!70, line width=0.5pt] (0,0) rectangle (0.45,0.30); \ Backend (API)\\[1pt]
+  \tikz\draw[fill=violet!12!white, draw=violet!60!black!70, line width=0.5pt] (0,0) rectangle (0.45,0.30); \ Databáza\\[1pt]
+  \tikz\draw[fill=gray!8!white, draw=black!55, line width=0.5pt, dashed] (0,0) rectangle (0.45,0.30); \ Zdieľaný balík\\[3pt]
+  \tikz\draw[->, line width=0.6pt, draw=black!55] (0,0) -- (0.7,0); \ HTTP / databázové volanie\\[1pt]
+  \tikz\draw[->, line width=0.6pt, draw=gray!70, dashed] (0,0) -- (0.7,0); \ npm workspace prepojenie
+};
+
+% Docker Compose obálka (cez fit cez frontendy + backend + db)
+\node[draw=cyan!55!black!60, dash pattern=on 3pt off 2pt,
+      line width=0.55pt, rounded corners=4pt,
+      fit=(platform)(admin)(api)(db),
+      inner sep=8pt, label={[font=\rmfamily\footnotesize\itshape, anchor=north east, text=cyan!50!black!70]north east:{\,docker-compose.yml\,}}] {};
+
+\end{tikzpicture}

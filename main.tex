@@ -169,7 +169,8 @@
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0pt}%
 
-\makeglossaries
+% Bez externého `makeglossaries` — zoznam skratiek sa vytvorí už pri pdflatex (LaTeX Workshop / rýchla kompilácia).
+\makenoidxglossaries
 \loadglsentries{essentials/acronyms}
 
 % ── Formátovanie obsahu (TOC) podľa referenčnej predlohy ────────────────────
@@ -241,42 +242,72 @@
         \renewcommand{\caption}[1]{}}
     {\end{figure}}
 
-% Code styling (if using listings package)
+% ── VS Code Light+ farby (pre listingy kódu) ────────────────────────────────
+\definecolor{vscBg}{HTML}{F8F8F8}        % pozadie (svetlosivá)
+\definecolor{vscFrame}{HTML}{D4D4D4}     % rám
+\definecolor{vscText}{HTML}{1F1F1F}      % bežný text
+\definecolor{vscKeyword}{HTML}{0033B3}   % kľúčové slová (modré)
+\definecolor{vscString}{HTML}{A31515}    % reťazce (tmavočervené)
+\definecolor{vscComment}{HTML}{6A9955}   % komentáre (zelené)
+\definecolor{vscNumber}{HTML}{098658}    % čísla
+\definecolor{vscType}{HTML}{267F99}      % typy (teal)
+\definecolor{vscFunction}{HTML}{795E26}  % funkcie (hnedé)
+\definecolor{vscVariable}{HTML}{001080}  % premenné (tmavomodré)
+\definecolor{vscLineNum}{HTML}{098658}   % číslovanie riadkov
+
+% Code styling - VS Code Light+ téma
 \lstset{
-    basicstyle=\ttfamily\small,          % Sets monospace font in small size
-    breaklines=true,                     % Enables automatic line breaking for long lines
-    showstringspaces=false,              % Hides visible spaces in strings
-    keywordstyle=\color{blue},           % Makes keywords blue
-    commentstyle=\color{green!60!black}, % Makes comments dark green
-    stringstyle=\color{red},             % Makes strings red
-    backgroundcolor=\color{gray!10},     % Light gray background (10% gray)
-    frame=single,                        % Adds a single frame around the code
-    framesep=5pt                         % Space between frame and code
+    basicstyle=\ttfamily\small\color{vscText},
+    breaklines=true,
+    breakatwhitespace=true,
+    breakindent=18pt,
+    showstringspaces=false,
+    keywordstyle=\color{vscKeyword}\bfseries,
+    commentstyle=\color{vscComment}\itshape,
+    stringstyle=\color{vscString},
+    numberstyle=\tiny\color{vscLineNum!70!black},
+    backgroundcolor=\color{vscBg},
+    frame=single,
+    framesep=8pt,
+    framerule=0.3pt,
+    rulecolor=\color{vscFrame},
+    xleftmargin=14pt,
+    xrightmargin=6pt,
+    aboveskip=14pt,
+    belowskip=14pt,
+    columns=fullflexible,
+    keepspaces=true,
+    captionpos=b
 }
 
-% Prisma schema language (PostgreSQL ORM DSL)
+% Prisma schema language (PostgreSQL ORM DSL) -- VS Code Light+ téma
 \lstdefinelanguage{Prisma}{%
   morekeywords={generator, datasource, model, enum, type, view},
   morekeywords=[2]{String, Int, Float, Boolean, DateTime, Json, Bytes, Decimal, BigInt},
   morekeywords=[3]{true, false, null},
-  keywordstyle=\color{blue!70!black}\bfseries,
-  keywordstyle=[2]\color{teal!60!black}\bfseries,
-  keywordstyle=[3]\color{orange!80!black}\bfseries,
+  keywordstyle=\color{vscKeyword}\bfseries,
+  keywordstyle=[2]\color{vscType}\bfseries,
+  keywordstyle=[3]\color{vscNumber}\bfseries,
   sensitive=true,
   comment=[l]{//},
   morecomment=[l]{///},
   morestring=[b]",
-  basicstyle=\ttfamily\footnotesize,
-  commentstyle=\color{gray!70!black}\itshape,
-  stringstyle=\color{red!60!black},
+  basicstyle=\ttfamily\footnotesize\color{vscText},
+  commentstyle=\color{vscComment}\itshape,
+  stringstyle=\color{vscString},
   numbers=left,
-  numberstyle=\tiny\color{gray},
+  numberstyle=\tiny\color{vscLineNum!70!black},
   numbersep=8pt,
-  backgroundcolor=\color{gray!7},
+  backgroundcolor=\color{vscBg},
   frame=single,
-  framesep=5pt,
+  framesep=8pt,
   framerule=0.3pt,
-  rulecolor=\color{gray!40},
+  rulecolor=\color{vscFrame},
+  xleftmargin=14pt,
+  xrightmargin=6pt,
+  aboveskip=14pt,
+  belowskip=14pt,
+  breakindent=18pt,
   breaklines=true,
   breakatwhitespace=true,
   showstringspaces=false,
@@ -330,17 +361,28 @@
     {text-gray-900}{{\textcolor{cyan!60!black}{text-gray-900}}}{13}
 }
 
-% Java/TS výpis so slovenskými znakmi (pdfLaTeX: literate namiesto multibajtov v listings)
+% Java/TS výpis so slovenskými znakmi -- VS Code Light+ téma
 \lstdefinestyle{slovakJava}{
   language=Java,
-  basicstyle=\ttfamily\footnotesize,
-  keywordstyle=\color{blue},
-  commentstyle=\color{green!60!black},
-  stringstyle=\color{red},
-  backgroundcolor=\color{gray!10},
+  basicstyle=\ttfamily\footnotesize\color{vscText},
+  keywordstyle=\color{vscKeyword}\bfseries,
+  commentstyle=\color{vscComment}\itshape,
+  stringstyle=\color{vscString},
+  numberstyle=\tiny\color{vscLineNum!70!black},
+  backgroundcolor=\color{vscBg},
   frame=single,
-  framesep=5pt,
+  framesep=8pt,
+  framerule=0.3pt,
+  rulecolor=\color{vscFrame},
+  xleftmargin=14pt,
+  xrightmargin=6pt,
+  aboveskip=14pt,
+  belowskip=14pt,
+  columns=fullflexible,
+  keepspaces=true,
   breaklines=true,
+  breakatwhitespace=true,
+  breakindent=18pt,
   showstringspaces=false,
   literate=%
     {á}{{\'a}}1 {Á}{{\'A}}1
@@ -415,7 +457,7 @@
 \addcontentsline{toc}{section}{Zoznam skratiek a značiek}
 \listheading{Zoznam skratiek a značiek}
 {\renewcommand{\glossarysection}[2][]{}%
- \printglossary[type=\acronymtype,title={}]}
+ \printnoidxglossary[type=\acronymtype,title={}]}
 \clearpage
 
 
@@ -601,7 +643,7 @@ Používateľ má po prihlásení prístup k funkciám, ktoré umožňujú aktí
 Administrátor má najvyššiu úroveň oprávnení a dohliada na technický a obsahový chod platformy cez dedikovaný admin panel. Na úrovni API sú tieto endpointy chránené kombináciou \hlcode{JwtAuthGuard} a vlastného \hlcode{RolesGuard}, ktorý overuje, či má prihlásený používateľ rolu \hlcode{ADMIN}.
 
 \noindent
-\begin{minipage}{\linewidth}% výpis v minipage sa nerozdelí naprieč stranami
+\noindent\begin{minipage}{\linewidth}% výpis v minipage sa nerozdelí naprieč stranami
 \begin{lstlisting}[language=Java]
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -684,7 +726,14 @@ Projekt využíva nástroj \hlcode{npm workspaces}, ktorý zabezpečuje logické
 
 \subsubsection[Model klient--server]{Model klient--server}
 \noindent
-Systém funguje na princípe striktného oddelenia prezentácie od aplikačnej logiky a ukladania dát.
+Systém funguje na princípe striktného oddelenia prezentácie od aplikačnej logiky a ukladania dát. Celkový pohľad na komponentovú architektúru -- vrátane troch nezávislých frontendov, centrálneho API, perzistenčnej vrstvy a zdieľaných npm balíkov -- zobrazuje obrázok~\ref{fig:architecture}.
+
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{\input{diagrams/architecture.tex}}
+\caption{Komponentová architektúra systému RentMe -- tri Next.js frontendové aplikácie komunikujú cez REST API s NestJS backendom; perzistencia je riešená cez Prisma ORM nad PostgreSQL, celý ekosystém je orchestrovaný cez Docker Compose}
+\label{fig:architecture}
+\end{figure}
 
 \begin{itemize}
   \item \textbf{Backend API (Server):} Je postavený na frameworku \hlcode{NestJS} a funguje ako centrálny bod systému. Zabezpečuje komunikáciu s databázou \hlcode{PostgreSQL} cez \hlcode{Prisma ORM}, vykonáva striktnú validáciu dát a overuje oprávnenia používateľov cez JWT tokeny (pomocou \hlcode{Passport.js}). API zároveň poskytuje automaticky generovanú Swagger dokumentáciu na adrese \hlcode{/api/docs}.
@@ -864,11 +913,10 @@ Tento mechanizmus zabezpečuje \emph{end-to-end} typovú bezpečnosť, čo drama
 
 \noindent\textit{Príklad zdieľaného DTO v balíku \hlcode{packages/shared} (využitie tried pre runtime validáciu):}
 
-\begin{minipage}{\linewidth}
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
   language=Java,
-  basicstyle=\ttfamily\footnotesize,
-  linewidth=\dimexpr\linewidth-1.2em\relax,
+  basicstyle=\ttfamily\footnotesize\color{vscText},
   breaklines=true,
   breakatwhitespace=true
 ]
@@ -922,11 +970,10 @@ Hlavnou výhodou NestJS je jeho striktná modulárna architektúra \parencite{ma
 
 \noindent\textit{Príklad použitia dekorátorov v kontroléri (ukážka z \hlcode{AdvertisementsController}):}
 
-\begin{minipage}{\linewidth}
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
   language=Java,
-  basicstyle=\ttfamily\footnotesize,
-  linewidth=\dimexpr\linewidth-1.2em\relax,
+  basicstyle=\ttfamily\footnotesize\color{vscText},
   breaklines=true,
   breakatwhitespace=true
 ]
@@ -996,13 +1043,12 @@ Samotné používateľské rozhranie je postavené na knižnici React \parencite
 
 \noindent\textit{Príklad komponentu s využitím podmienkového renderovania a Tailwind CSS (ukážka z \hlcode{CreateAdvertisementWizard}):}
 
-\begin{minipage}{\linewidth}
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
   language=TSX,
-  basicstyle=\ttfamily\footnotesize,
+  basicstyle=\ttfamily\footnotesize\color{vscText},
   columns=fullflexible,
   keepspaces=true,
-  linewidth=\dimexpr\linewidth-1.2em\relax,
   breaklines=true,
   breakatwhitespace=false
 ]
@@ -1217,13 +1263,16 @@ Pre správu celého ekosystému som zvolil architektúru monorepa s využitím n
 Projekt je rozdelený do dvoch hlavných priečinkov, ktoré jasne oddeľujú spustiteľné aplikácie od knižníc. Pre lepšiu orientáciu uvádzam zjednodušenú štruktúru projektu:
 
 \begin{lstlisting}[
-  basicstyle=\scriptsize\ttfamily,
-  backgroundcolor=\color{gray!10},
-  frame=none,
-  xleftmargin=0pt,
-  xrightmargin=0pt,
-  aboveskip=4pt,
-  belowskip=4pt,
+  basicstyle=\scriptsize\ttfamily\color{vscText},
+  backgroundcolor=\color{vscBg},
+  frame=single,
+  framesep=6pt,
+  framerule=0.3pt,
+  rulecolor=\color{vscFrame},
+  xleftmargin=8pt,
+  xrightmargin=4pt,
+  aboveskip=6pt,
+  belowskip=6pt,
 ]
 .
 |-- apps/
@@ -1280,15 +1329,21 @@ Modul \hlcode{AdvertisementsModule} je najrozsiahlejšou časťou backendu, nako
 \begin{itemize}
   \item \textbf{CRUD operácie:} Implementoval som endpointy pre vytvorenie, čítanie, aktualizáciu a mazanie inzerátov. Každý inzerát je identifikovaný unikátnym UUID, ktoré sa používa v URL detailu inzerátu a v relačných väzbách na ďalšie entity.
   \item \textbf{Spracovanie polohy:} Inzeráty ukladajú GPS súradnice (latitúda, longitúda), ktoré sú nevyhnutné pre zobrazenie na mape vo frontende.
-  \item \textbf{Stavy inzerátov:} Logika v \hlcode{AdvertisementsService} zabezpečuje prechody medzi všetkými stavmi definovanými v \hlcode{AdvertisementStatus}: \hlcode{PENDING} (čakajúci na schválenie), \hlcode{DRAFT} (rozpracovaný koncept), \hlcode{ACTIVE} (viditeľný), \hlcode{INACTIVE} (deaktivovaný používateľom) a \hlcode{ARCHIVED} (archivovaný).
+  \item \textbf{Stavy inzerátov:} Logika v \hlcode{AdvertisementsService} zabezpečuje prechody medzi všetkými stavmi definovanými v \hlcode{AdvertisementStatus}: \hlcode{PENDING} (čakajúci na schválenie), \hlcode{DRAFT} (rozpracovaný koncept), \hlcode{ACTIVE} (viditeľný), \hlcode{INACTIVE} (deaktivovaný používateľom) a \hlcode{ARCHIVED} (archivovaný). Úplnú mapu prechodov medzi týmito stavmi vrátane aktérov, ktorí jednotlivé akcie vyvolávajú (používateľ vs.\ administrátor), zobrazuje obrázok~\ref{fig:state-advertisement}.
 \end{itemize}
+
+\begin{figure}[htbp]
+\centering
+\resizebox{!}{0.65\textheight}{\input{diagrams/state-advertisement.tex}}
+\caption{Stavový diagram životného cyklu inzerátu -- päť stavov enumerátora \texttt{AdvertisementStatus} a prechody medzi nimi; akcie vyvoláva buď používateľ (vytvorenie, odoslanie, deaktivácia) alebo administrátor (schválenie, zamietnutie)}
+\label{fig:state-advertisement}
+\end{figure}
 
 \noindent\textit{Ukážka schvaľovacieho procesu inzerátu z \hlcode{AdvertisementsService}:}
 
-\begin{minipage}{\linewidth}
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
   style=slovakJava,
-  linewidth=\dimexpr\linewidth-1.2em\relax,
   breakatwhitespace=true
 ]
 async approve(id: string) {
@@ -1317,7 +1372,14 @@ async approve(id: string) {
 \end{minipage}
 \vspace{0.4\baselineskip}
 \noindent
-Táto ukážka jasne demonštruje, ako je služba napísaná odolne voči chybám (využitím \hlcode{NotFoundException} a \hlcode{ForbiddenException}). Kombinuje validáciu stavu, aktualizáciu v databáze a komunikáciu s iným modulom (\hlcode{MessagesService}) pre odoslanie notifikácie používateľovi ako vedľajší efekt.
+Táto ukážka jasne demonštruje, ako je služba napísaná odolne voči chybám (využitím \hlcode{NotFoundException} a \hlcode{ForbiddenException}). Kombinuje validáciu stavu, aktualizáciu v databáze a komunikáciu s iným modulom (\hlcode{MessagesService}) pre odoslanie notifikácie používateľovi ako vedľajší efekt. Celkový tok HTTP požiadavky -- od admina, cez bezpečnostné guardy, aplikačnú službu, perzistenčnú vrstvu až po notifikáciu vlastníka inzerátu -- je vizualizovaný sekvenčným diagramom na obrázku~\ref{fig:sequence-approve}.
+
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{\input{diagrams/sequence-approve.tex}}
+\caption{Sekvenčný diagram schválenia inzerátu administrátorom -- HTTP požiadavka \texttt{PATCH /advertisements/:id/approve} postupne prechádza vrstvami \texttt{JwtAuthGuard} a \texttt{RolesGuard}, \texttt{AdvertisementsService} validuje stav inzerátu, aktualizuje záznam cez \texttt{PrismaService} a deleguje notifikáciu na \texttt{MessagesService}}
+\label{fig:sequence-approve}
+\end{figure}
 
 \subsubsection{Modul Categories a dynamické filtre}
 \noindent
