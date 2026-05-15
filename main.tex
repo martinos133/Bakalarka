@@ -77,7 +77,7 @@
 % Thesis metadata
 % Bachelor thesis info
 \ifdefined\isBachelorThesis
-\title{RentMe: Webová platforma pre inzerciu služieb a prenájmu}
+\title{Návrh a implementácia webovej inzerenčnej platformy}
 \author{Martin Muha}
 \def\thesisHeader{Bakalárska práca} 
 \fi
@@ -89,8 +89,7 @@
 \def\thesisHeader{Diplomová práca}
 \fi
 
-% !!! NUTNÉ DOPLNIŤ pred odovzdaním (nedostupné z PDF):
-\def\uid{FI-XXXXXX-XXXXX}        % TODO: doplň svoje evidenčné číslo zo zadania (formát FI-NNNNNN-NNNNN)
+\def\uid{FI-11145-22787}
 \def\supervisor{Mgr. Michal Drobný}
 \def\consultant{Mgr. Ignác Novák} % Voliteľné, použité len ak konzultant existuje
 \def\thesisyear{2026}
@@ -465,44 +464,16 @@
 %%%%%%% DOCUMENT BODY %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Začni písať sem (prázdne od začiatku):
-\section{Úvod}
-\subsection{Motivácia a význam inzertných platforiem v súčasnosti}
+\section*{Úvod}
+\addcontentsline{toc}{section}{Úvod}
 \noindent
-V súčasnej digitálnej ére prechádza spôsob, akým spotrebitelia vyhľadávajú služby a prenájmy, zásadnou transformáciou \parencite{vallas2020platforms}. Tradičné formy inzercie sú nahrádzané interaktívnymi webovými platformami, ktoré umožňujú okamžitý prístup k informáciám v reálnom čase. Hlavnou motiváciou pre vývoj modernej inzertnej platformy je potreba konsolidovať rozptýlenú ponuku do jedného transparentného a bezpečného ekosystému.
+V súčasnej digitálnej ére prechádza spôsob, akým spotrebitelia vyhľadávajú služby a prenájmy, zásadnou transformáciou \parencite{vallas2020platforms}. Tradičné formy inzercie sú nahrádzané interaktívnymi webovými platformami, ktoré umožňujú okamžitý prístup k informáciám v reálnom čase. Hlavnou motiváciou pre vývoj modernej inzertnej platformy je potreba konsolidovať rozptýlenú ponuku do jedného transparentného a bezpečného ekosystému. Moderný používateľ očakáva vysokú mieru flexibility a rýchlosti pri hľadaní odborných služieb či prenájmu, pričom kľúčovým faktorom úspechu je budovanie mena aplikácie, zvyšovanie jej návštevnosti a vznik takzvaného sieťového efektu \parencite{rochet2003platform}. Pri službách a prenájmoch zohráva geografická poloha kritickú úlohu, a preto implementácia pokročilých mapových rozhraní a lokalizačných služieb (v projekte riešené cez knižnicu \hlcode{Leaflet}) výrazne zvyšuje používateľský komfort \parencite{obe2017postgresql}. Okrem funkčnej vybavenosti je kľúčovým prvkom významu platformy aj jej jednoduchosť, intuitívne používateľské rozhranie a nízka bariéra vstupu \parencite{riva2022nextjs}. Jednou z najväčších výziev online inzercie je eliminácia podvodného správania -- platforma musí garantovať bezpečnosť prostredníctvom aktívnej moderácie, systému nahlasovania a prísnych pravidiel schvaľovania inzerátov, čím buduje nevyhnutnú dôveru medzi subjektmi v digitálnom priestore \parencite{hoffman2020websec, sundararajan2014peer}.
 
-\subsubsection{Digitalizácia, dostupnosť a sieťový efekt}
-Moderný používateľ očakáva vysokú mieru flexibility a rýchlosti pri hľadaní odborných služieb či prenájmu. Kľúčovým faktorom úspechu je budovanie mena aplikácie a zvyšovanie jej návštevnosti, čím vzniká takzvaný sieťový efekt~--~s rastúcim počtom inzerátov a používateľov sa zvyšuje celkový dopyt po ponukách a hodnota platformy pre celú komunitu \parencite{rochet2003platform}. Digitalizácia týchto procesov odbúrava administratívne bariéry a umožňuje efektívnejšie párovanie dopytu s ponukou.
+Súčasný digitálny trh so službami a prenájmom na Slovensku je príliš rozdrobený, čo komplikuje kontakt medzi tými, ktorí službu ponúkajú, a tými, ktorí ju hľadajú. Hlavným problémom je chýbajúca univerzálna platforma, ktorá by dokázala spojiť rôzne profesie a typy prenájmu na jednom mieste. Používatelia sú dnes nútení hľadať riešenia cez viaceré, často špecializované alebo neformálne kanály -- portál \hlcode{pretlak.com} sa zameriava takmer výhradne na IT, marketing a kreatívny priemysel, sociálne skupiny na Facebooku slúžia len úzkemu okruhu odborníkov a portál \hlcode{bazos.sk} je primárne určený na predaj tovaru. Z pohľadu bezpečnosti sú sociálne siete a fóra rizikové, pretože im chýbajú nástroje na kontrolu obsahu alebo overovanie osôb; prevádzkovatelia týchto skupín navyše nevedia sledovať, o čo majú ľudia skutočný záujem, pretože nemajú prístup k analytickým dátam.
 
-\subsubsection{Lokalizácia a geografický kontext}
-Pri službách a prenájmoch zohráva geografická poloha kritickú úlohu. Implementácia pokročilých mapových rozhraní a lokalizačných služieb (v projekte riešené cez knižnicu \hlcode{Leaflet}) umožňuje používateľom vizualizovať dostupnosť ponúk vo svojom bezprostrednom okolí \parencite{obe2017postgresql}. Tento prístup zvyšuje používateľský komfort a znižuje logistické náklady, pričom geografické vyhľadávanie sa stáva štandardom odlišujúcim profesionálne riešenia od jednoduchých textových zoznamov.
+Hlavným cieľom tejto bakalárskej práce je navrhnúť a vytvoriť modernú webovú platformu, ktorá slúži na uverejňovanie a správu inzerátov v oblasti služieb a prenájmu. Celý systém je navrhnutý tak, aby na jednom mieste prepojil bežných používateľov, poskytovateľov služieb a administrátorov, čím nahrádza súčasné neprehľadné hľadanie na sociálnych sieťach alebo všeobecných inzertných weboch. Konkrétne čiastkové úlohy zahŕňajú: vytvorenie stabilného a bezpečného backendu pomocou frameworku \hlcode{NestJS} s JWT autentifikáciou a databázou \hlcode{PostgreSQL}; vývoj troch samostatných \hlcode{Next.js} aplikácií prispôsobených konkrétnym skupinám používateľov (verejná platforma, používateľská zóna, administračný panel); implementáciu interaktívnej mapy cez \hlcode{Leaflet}; návrh systému dynamických filtrov a kategórií; a vytvorenie analytických nástrojov spolu s funkciami na moderovanie obsahu a nahlasovanie nevhodných inzerátov.
 
-\subsubsection{Jednoduchosť a používateľská prívetivosť}
-Okrem funkčnej vybavenosti je kľúčovým prvkom významu platformy jej jednoduchosť. Intuitívne používateľské rozhranie zabezpečuje, že aplikácia je prístupná širokému spektru osôb bez ohľadu na ich technické zručnosti \parencite{riva2022nextjs}. Práve nízka bariéra vstupu a rýchly proces publikácie inzerátu priamo podmieňujú ochotu používateľov opakovane sa do systému vracať. Výskumy v oblasti UX (User Experience) opakovane potvrdzujú, že každé zbytočné kliknutie alebo krok vo formulári znižuje mieru dokončenia o desiatky percent -- preto som zvolil viacstupňového sprievodcu (wizard) namiesto dlhého jednostranového formulára.
-
-\subsubsection{Dôvera, bezpečnosť a transparentnosť}
-Jednou z najväčších výziev online inzercie je eliminácia podvodného správania \parencite{hoffman2020websec}. Význam platformy spočíva v schopnosti garantovať bezpečnosť prostredníctvom aktívnej moderácie, systémov na nahlasovanie podozrivých aktivít (modul \hlcode{reports}) a prísnych pravidiel pre schvaľovanie inzerátov administrátorom. Tieto prvky, spolu s prehľadnou históriou správ, budujú nevyhnutnú dôveru medzi subjektmi v digitálnom priestore \parencite{sundararajan2014peer}.
-
-\subsection{Definícia problému (centralizácia služieb a prenájmu)}
-\noindent
-Súčasný digitálny trh so službami a prenájmom na Slovensku je príliš rozdrobený, čo komplikuje kontakt medzi tými, ktorí službu ponúkajú, a tými, ktorí ju hľadajú. Hlavným problémom je chýbajúca univerzálna platforma, ktorá by dokázala spojiť rôzne profesie a typy prenájmu na jednom mieste. Používatelia sú dnes nútení hľadať riešenia cez viaceré, často špecializované alebo neformálne kanály, ktoré však nespĺňajú všetky ich potreby.
-
-Dobrým príkladom špecializácie je portál \hlcode{pretlak.com}. Ponúka síce moderné prostredie, ale zameriava sa takmer výhradne na IT, marketing a kreatívny priemysel. Podobne sú na tom aj skupiny na sociálnych sieťach, napríklad skupina \hllink{Programátori}{https://www.facebook.com/groups/programatori/?locale=sk_SK}, ktorá slúži len úzkemu okruhu odborníkov na vývoj. Ostatné remeslá a profesie tak často končia na portáli \hlcode{bazos.sk}. Ten je však v prvom rade určený na predaj tovaru, nie na správu služieb. Navyše, jeho vizuálna stránka a ovládanie cielia skôr na staršie generácie, čo pre mladších používateľov, zvyknutých na moderné a rýchle aplikácie, predstavuje technologickú prekážku.
-
-Ďalšou výraznou slabinou je chýbajúca štruktúra a slabé možnosti filtrovania. Na sociálnych sieťach sa príspevky radia za sebou podľa času pridania, kvôli čomu zaujímavé ponuky rýchlo zapadnú. Keďže chýba podrobné vyhľadávanie, používateľ musí manuálne prechádzať množstvo inzerátov, ktoré ho nezaujímajú. Problémom je aj chýbajúci geografický prehľad. Bez mapy a presného určenia polohy je veľmi ťažké a zdĺhavé nájsť niekoho, kto poskytuje služby priamo v okolí používateľa.
-
-Z pohľadu bezpečnosti sú sociálne siete a fóra rizikové, pretože im chýbajú nástroje na kontrolu obsahu alebo overovanie osôb. Ak niekto poruší pravidlá, administrátor nemá k dispozícii systém, ktorý by okamžite zasiahol, čo vytvára priestor pre podvody. Prevádzkovatelia týchto skupín navyše nevedia sledovať, o čo majú ľudia skutočný záujem, pretože nemajú prístup k analytickým dátam. Moja práca na tieto nedostatky reaguje vytvorením centralizovanej platformy, ktorá spája všetky potrebné funkcie do jedného prehľadného systému s jasnými pravidlami a jednoduchým ovládaním.
-
-\subsection{Ciele bakalárskej práce}
-\noindent
-Hlavným cieľom tejto bakalárskej práce je navrhnúť a vytvoriť modernú webovú platformu, ktorá slúži na uverejňovanie a správu inzerátov v oblasti služieb a prenájmu. Celý systém je navrhnutý tak, aby na jednom mieste prepojil bežných používateľov, poskytovateľov služieb a administrátorov, čím nahrádza súčasné neprehľadné hľadanie na sociálnych sieťach alebo všeobecných inzertných weboch.
-
-Pre dosiahnutie tohto hlavného cieľa som si stanovil niekoľko konkrétnych úloh:
-
-Prvou úlohou je vytvorenie stabilného a bezpečného technického zázemia (backendu) pomocou frameworku \hlcode{NestJS}. Tento systém musí zvládnuť bezpečnú registráciu a prihlasovanie používateľov cez \hlcode{JWT} tokeny, správne ukladať dáta do databázy \hlcode{PostgreSQL} a zabezpečiť, aby sa k citlivým údajom nedostal nikto nepovolaný. Dôležitým bodom je aj kontrola vstupných údajov, aby sa predišlo chybám alebo útokom na aplikáciu.
-
-Druhou úlohou je vývoj troch samostatných webových aplikácií pomocou technológie \hlcode{Next.js}, ktoré sú prispôsobené konkrétnym skupinám ľudí. Verejná časť umožní návštevníkom rýchlo vyhľadávať inzeráty aj pomocou interaktívnej mapy, používateľská zóna dovolí registrovaným členom spravovať svoje ponuky a správy, a administračný panel poskytne nástroje na schvaľovanie obsahu a sledovanie štatistík. Pri tvorbe vzhľadu sa zameriavam na jednoduchosť a moderný dizajn, aby bola aplikácia príjemná pre mladšiu generáciu, no zároveň zrozumiteľná pre každého.
-
-Posledným dôležitým cieľom je implementácia analytických nástrojov a funkcií na moderovanie obsahu. Systém bude automaticky sledovať kliknutia na inzeráty, čo správcovi pomôže pochopiť, o ktoré kategórie je najväčší záujem. Zároveň bude platforma obsahovať funkcie na nahlasovanie nevhodných inzerátov a možnosť zablokovať problémových používateľov, čím sa zvýši celková bezpečnosť a dôveryhodnosť celého systému.
+Práca je členená do siedmich kapitol. Prvá kapitola podrobuje analýze súčasný stav riešenej problematiky a porovnáva existujúce platformy. Druhá kapitola popisuje analýzu a návrh systému vrátane funkčných požiadaviek, databázového modelu a REST API rozhrania. Tretia kapitola sa venuje použitým technológiám (TypeScript, NestJS, Next.js, PostgreSQL, Prisma ORM, Docker). Štvrtá kapitola opisuje realizáciu a implementáciu jednotlivých modulov a klientskych aplikácií. Piata kapitola prezentuje testovanie systému na úrovni jednotkových testov, REST API, bezpečnostného testovania podľa OWASP Top Ten a manuálneho používateľského testovania. Šiesta kapitola diskutuje prínosy práce a možnosti ďalšieho rozšírenia.
 
 \section{Súčasný stav riešenej problematiky}
 \noindent
@@ -610,7 +581,7 @@ Obrázok~\ref{fig:usecase-funkcne} zobrazuje diagram použitia (Use Case): vzťa
 \begin{figure}[htbp]
 \centering
 \resizebox{\textwidth}{!}{\input{diagrams/usecase-functional.tex}}
-\caption{Diagram použitia (Use Case) -- funkčné požiadavky a aktéri systému}
+\caption{Diagram použitia (Use Case) -- funkčné požiadavky a aktéri systému (Zdroj: Martin Muha.)}
 \label{fig:usecase-funkcne}
 \end{figure}
 
@@ -731,7 +702,7 @@ Systém funguje na princípe striktného oddelenia prezentácie od aplikačnej l
 \begin{figure}[htbp]
 \centering
 \resizebox{\textwidth}{!}{\input{diagrams/architecture.tex}}
-\caption{Komponentová architektúra systému RentMe -- tri Next.js frontendové aplikácie komunikujú cez REST API s NestJS backendom; perzistencia je riešená cez Prisma ORM nad PostgreSQL, celý ekosystém je orchestrovaný cez Docker Compose}
+\caption{Komponentová architektúra systému RentMe -- tri Next.js frontendové aplikácie komunikujú cez REST API s NestJS backendom; perzistencia je riešená cez Prisma ORM nad PostgreSQL, celý ekosystém je orchestrovaný cez Docker Compose (Zdroj: Martin Muha.)}
 \label{fig:architecture}
 \end{figure}
 
@@ -758,7 +729,7 @@ Obrázok~\ref{fig:flow-zapis-databazy} znázorňuje zjednodušený tok vrstiev p
 \centering
 % Obmedzenie výšky — pri šírke \textwidth by vertikálny diagram presahoval stranu
 \resizebox{!}{0.34\textheight}{\input{diagrams/flow-zapis-databazy.tex}}
-\caption{Tok zápisu dát po validácii: kontrolér, aplikačná služba, Prisma ORM a databáza PostgreSQL}
+\caption{Tok zápisu dát po validácii: kontrolér, aplikačná služba, Prisma ORM a databáza PostgreSQL (Zdroj: Martin Muha.)}
 \label{fig:flow-zapis-databazy}
 \end{figure}
 
@@ -799,7 +770,7 @@ Logický model databázy som vytvoril v deklaratívnom jazyku Prisma (\hlcode{sc
 \begin{figure}[p]
 \centering
 \resizebox{\textwidth}{!}{\input{diagrams/erd-database.tex}}
-\caption{Entitno-relačný diagram (ERD) databázy -- jadrové entity, podporné tabuľky a ich relácie}
+\caption{Entitno-relačný diagram (ERD) databázy -- jadrové entity, podporné tabuľky a ich relácie (Zdroj: Martin Muha.)}
 \label{fig:erd-database}
 \end{figure}
 
@@ -856,7 +827,7 @@ API je logicky rozdelené do modulov, ktoré zodpovedajú doménam v databáze. 
 \bottomrule
 \end{tabular}
 \endgroup
-\caption{Prehľad hlavných modulov API a základných ciest}
+\caption{Prehľad hlavných modulov API a základných ciest (Zdroj: Martin Muha.)}
 \label{tab:api-moduly}
 \end{table}
 
@@ -1099,7 +1070,7 @@ Pre inzertný portál je kľúčová vizualizácia polohy. Vo fronte aplikácie 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/mapa_1.png}
-\caption{Mapové zobrazenie inzerátov (Leaflet) -- markery agregované do clusterov pri väčšom priblížení a dynamické načítanie polôh z endpointu \texttt{GET /advertisements/map}}
+\caption{Mapové zobrazenie inzerátov (Leaflet) -- markery agregované do clusterov pri väčšom priblížení a dynamické načítanie polôh z endpointu \texttt{GET /advertisements/map} (Zdroj: Martin Muha.)}
 \label{fig:mapa-1}
 \end{figure}
 
@@ -1111,7 +1082,7 @@ Toto riešenie zabezpečí, že sa mapa inicializuje až priamo v prehliadači p
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/mapa_2.png}
-\caption{Interaktívny popup nad markerom v mape Leaflet -- náhľad inzerátu s fotografiou, názvom, cenou a odkazom na detail}
+\caption{Interaktívny popup nad markerom v mape Leaflet -- náhľad inzerátu s fotografiou, názvom, cenou a odkazom na detail (Zdroj: Martin Muha.)}
 \label{fig:mapa-2}
 \end{figure}
 
@@ -1204,7 +1175,7 @@ Nasadenie & Apache/Nginx + PHP-FPM & Node.js / Docker / Vercel \\
 \bottomrule
 \end{tabular}
 \endgroup
-\caption{Porovnanie PHP (Laravel) a Node.js/TypeScript ekosystému}
+\caption{Porovnanie PHP (Laravel) a Node.js/TypeScript ekosystému (Zdroj: Martin Muha.)}
 \label{tab:php-vs-node}
 \end{table}
 
@@ -1335,7 +1306,7 @@ Modul \hlcode{AdvertisementsModule} je najrozsiahlejšou časťou backendu, nako
 \begin{figure}[htbp]
 \centering
 \resizebox{!}{0.65\textheight}{\input{diagrams/state-advertisement.tex}}
-\caption{Stavový diagram životného cyklu inzerátu -- päť stavov enumerátora \texttt{AdvertisementStatus} a prechody medzi nimi; akcie vyvoláva buď používateľ (vytvorenie, odoslanie, deaktivácia) alebo administrátor (schválenie, zamietnutie)}
+\caption{Stavový diagram životného cyklu inzerátu -- päť stavov enumerátora \texttt{AdvertisementStatus} a prechody medzi nimi; akcie vyvoláva buď používateľ (vytvorenie, odoslanie, deaktivácia) alebo administrátor (schválenie, zamietnutie) (Zdroj: Martin Muha.)}
 \label{fig:state-advertisement}
 \end{figure}
 
@@ -1377,7 +1348,7 @@ Táto ukážka jasne demonštruje, ako je služba napísaná odolne voči chybá
 \begin{figure}[htbp]
 \centering
 \resizebox{\textwidth}{!}{\input{diagrams/sequence-approve.tex}}
-\caption{Sekvenčný diagram schválenia inzerátu administrátorom -- HTTP požiadavka \texttt{PATCH /advertisements/:id/approve} postupne prechádza vrstvami \texttt{JwtAuthGuard} a \texttt{RolesGuard}, \texttt{AdvertisementsService} validuje stav inzerátu, aktualizuje záznam cez \texttt{PrismaService} a deleguje notifikáciu na \texttt{MessagesService}}
+\caption{Sekvenčný diagram schválenia inzerátu administrátorom -- HTTP požiadavka \texttt{PATCH /advertisements/:id/approve} postupne prechádza vrstvami \texttt{JwtAuthGuard} a \texttt{RolesGuard}, \texttt{AdvertisementsService} validuje stav inzerátu, aktualizuje záznam cez \texttt{PrismaService} a deleguje notifikáciu na \texttt{MessagesService} (Zdroj: Martin Muha.)}
 \label{fig:sequence-approve}
 \end{figure}
 
@@ -1410,7 +1381,7 @@ Aplikácia \hlcode{apps/platform} je vstupnou bránou celej platformy a je optim
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/platforma_1.png}
-\caption{Verejná platforma -- úvodná stránka s hero sekciou, hlavnou navigáciou a prezentáciou kľúčových kategórií}
+\caption{Verejná platforma -- úvodná stránka s hero sekciou, hlavnou navigáciou a prezentáciou kľúčových kategórií (Zdroj: Martin Muha.)}
 \label{fig:platforma-1}
 \end{figure}
 
@@ -1419,21 +1390,21 @@ Aplikácia \hlcode{apps/platform} je vstupnou bránou celej platformy a je optim
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/platforma_2.png}
-\caption{Verejná platforma -- prehľad aktívnych inzerátov so zoznamovým zobrazením a postrannými filtrami}
+\caption{Verejná platforma -- prehľad aktívnych inzerátov so zoznamovým zobrazením a postrannými filtrami (Zdroj: Martin Muha.)}
 \label{fig:platforma-2}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/category_1.png}
-\caption{Detail kategórie -- zoznam inzerátov v rámci zvolenej kategórie s hierarchickou navigáciou a SEO-optimalizovanou URL}
+\caption{Detail kategórie -- zoznam inzerátov v rámci zvolenej kategórie s hierarchickou navigáciou a SEO-optimalizovanou URL (Zdroj: Martin Muha.)}
 \label{fig:category-1}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.7\textwidth]{images/filters.png}
-\caption{Panel dynamických filtrov -- vstupy generované podľa konfigurácie kategórie (typy \texttt{TEXT}, \texttt{NUMBER}, \texttt{SELECT}, \texttt{MULTISELECT}, \texttt{BOOLEAN}, \texttt{DATE}, \texttt{RANGE})}
+\caption{Panel dynamických filtrov -- vstupy generované podľa konfigurácie kategórie (typy \texttt{TEXT}, \texttt{NUMBER}, \texttt{SELECT}, \texttt{MULTISELECT}, \texttt{BOOLEAN}, \texttt{DATE}, \texttt{RANGE}) (Zdroj: Martin Muha.)}
 \label{fig:filters}
 \end{figure}
 
@@ -1442,7 +1413,7 @@ Aplikácia \hlcode{apps/platform} je vstupnou bránou celej platformy a je optim
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/platforma_3.png}
-\caption{Verejná platforma -- interaktívne mapové zobrazenie inzerátov implementované knižnicou Leaflet}
+\caption{Verejná platforma -- interaktívne mapové zobrazenie inzerátov implementované knižnicou Leaflet (Zdroj: Martin Muha.)}
 \label{fig:platforma-3}
 \end{figure}
 
@@ -1451,7 +1422,7 @@ Aplikácia \hlcode{apps/platform} je vstupnou bránou celej platformy a je optim
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/platforma_4.png}
-\caption{Verejná platforma -- sekcia blogu a informačných stránok generovaných cez SSR z databázy}
+\caption{Verejná platforma -- sekcia blogu a informačných stránok generovaných cez SSR z databázy (Zdroj: Martin Muha.)}
 \label{fig:platforma-4}
 \end{figure}
 
@@ -1466,7 +1437,7 @@ V prvom kroku sprievodcu (obr.~\ref{fig:inzerat-1}) si používateľ zvolí typ 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/inzerat_1.png}
-\caption{Sprievodca tvorbou inzerátu -- krok~1: výber typu ponuky (služba alebo prenájom) a hierarchický výber kategórie}
+\caption{Sprievodca tvorbou inzerátu -- krok~1: výber typu ponuky (služba alebo prenájom) a hierarchický výber kategórie (Zdroj: Martin Muha.)}
 \label{fig:inzerat-1}
 \end{figure}
 
@@ -1475,7 +1446,7 @@ V druhom kroku používateľ vyplní základné údaje o inzeráte -- názov, po
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/inzerat_2.png}
-\caption{Sprievodca tvorbou inzerátu -- krok~2: zadanie základných údajov (názov, popis, cena) a dynamických špecifikácií podľa zvolenej kategórie}
+\caption{Sprievodca tvorbou inzerátu -- krok~2: zadanie základných údajov (názov, popis, cena) a dynamických špecifikácií podľa zvolenej kategórie (Zdroj: Martin Muha.)}
 \label{fig:inzerat-2}
 \end{figure}
 
@@ -1484,7 +1455,7 @@ Tretí krok je venovaný obrazovej dokumentácii ponuky a definícii balíčkov 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/inzerat_3.png}
-\caption{Sprievodca tvorbou inzerátu -- krok~3: nahrávanie obrazovej dokumentácie a definícia balíčkov služieb}
+\caption{Sprievodca tvorbou inzerátu -- krok~3: nahrávanie obrazovej dokumentácie a definícia balíčkov služieb (Zdroj: Martin Muha.)}
 \label{fig:inzerat-3}
 \end{figure}
 
@@ -1493,7 +1464,7 @@ Posledný krok sprievodcu zhromažďuje geografické údaje cez interaktívnu ma
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/inzerat_4.png}
-\caption{Sprievodca tvorbou inzerátu -- krok~4: výber polohy na interaktívnej mape (Leaflet) a finálne odoslanie inzerátu na schválenie}
+\caption{Sprievodca tvorbou inzerátu -- krok~4: výber polohy na interaktívnej mape (Leaflet) a finálne odoslanie inzerátu na schválenie (Zdroj: Martin Muha.)}
 \label{fig:inzerat-4}
 \end{figure}
 
@@ -1502,7 +1473,7 @@ Posledný krok sprievodcu zhromažďuje geografické údaje cez interaktívnu ma
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/profile-inzerat.png}
-\caption{Verejný profil predajcu -- prehľad aktívnych inzerátov, kontaktné údaje a hodnotenia získané od ostatných používateľov platformy}
+\caption{Verejný profil predajcu -- prehľad aktívnych inzerátov, kontaktné údaje a hodnotenia získané od ostatných používateľov platformy (Zdroj: Martin Muha.)}
 \label{fig:profile-inzerat}
 \end{figure}
 
@@ -1511,14 +1482,14 @@ Okrem viacstupňového sprievodcu poskytuje aplikácia aj klasický jednostranov
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/pridat-inzerat.png}
-\caption{Pridanie inzerátu -- horná časť formulára so základnými údajmi (typ ponuky, kategória, názov, popis, cena) a možnosťou nahratia fotografií}
+\caption{Pridanie inzerátu -- horná časť formulára so základnými údajmi (typ ponuky, kategória, názov, popis, cena) a možnosťou nahratia fotografií (Zdroj: Martin Muha.)}
 \label{fig:pridat-inzerat}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/pridat-inzerat_1.png}
-\caption{Pridanie inzerátu -- spodná časť formulára s dynamickými špecifikáciami, výberom polohy na mape Leaflet a tlačidlom na odoslanie do moderačnej fronty}
+\caption{Pridanie inzerátu -- spodná časť formulára s dynamickými špecifikáciami, výberom polohy na mape Leaflet a tlačidlom na odoslanie do moderačnej fronty (Zdroj: Martin Muha.)}
 \label{fig:pridat-inzerat-1}
 \end{figure}
 
@@ -1531,14 +1502,14 @@ Okrem viacstupňového sprievodcu poskytuje aplikácia aj klasický jednostranov
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/platba-1.png}
-\caption{Výber predajného balíka -- štyri úrovne \texttt{SellerPlan} (Štandard~--~0\,€/mesiac, Plus~--~8,99\,€/mesiac, RentMe Pro~--~16,99\,€/mesiac, Firma~--~39\,€/mesiac) s porovnaním funkcií a viditeľnosti inzerátov}
+\caption{Výber predajného balíka -- štyri úrovne \texttt{SellerPlan} (Štandard~--~0\,€/mesiac, Plus~--~8,99\,€/mesiac, RentMe Pro~--~16,99\,€/mesiac, Firma~--~39\,€/mesiac) s porovnaním funkcií a viditeľnosti inzerátov (Zdroj: Martin Muha.)}
 \label{fig:platba-1}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/platby-2.png}
-\caption{Modul platieb -- detail jednotlivej transakcie so sumou, obdobím prenájmu, referenciou na inzerát a časovou osou zmien stavu}
+\caption{Modul platieb -- detail jednotlivej transakcie so sumou, obdobím prenájmu, referenciou na inzerát a časovou osou zmien stavu (Zdroj: Martin Muha.)}
 \label{fig:platby-2}
 \end{figure}
 
@@ -1549,7 +1520,7 @@ Aplikácia \hlcode{apps/admin} poskytuje správcom platformy kompletné nástroj
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.78\textwidth]{images/admin-login.png}
-\caption{Prihlasovacia obrazovka administračného panela RentMe -- minimalistický dizajn s tmavou paletou a prémiovým zlatým akcentom}
+\caption{Prihlasovacia obrazovka administračného panela RentMe -- minimalistický dizajn s tmavou paletou a prémiovým zlatým akcentom (Zdroj: Martin Muha.)}
 \label{fig:admin-login}
 \end{figure}
 
@@ -1558,7 +1529,7 @@ Po úspešnej autentifikácii je administrátor presmerovaný na hlavnú násten
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/admin.png}
-\caption{Hlavná nástenka admin panela -- bočná navigácia (Nástenky, Komunikácia, Moderácia, Správa, Obsah), rýchle akcie, agregované metriky a panel s nedávnymi konverzáciami}
+\caption{Hlavná nástenka admin panela -- bočná navigácia (Nástenky, Komunikácia, Moderácia, Správa, Obsah), rýchle akcie, agregované metriky a panel s nedávnymi konverzáciami (Zdroj: Martin Muha.)}
 \label{fig:admin-dashboard}
 \end{figure}
 
@@ -1573,7 +1544,7 @@ Po úspešnej autentifikácii je administrátor presmerovaný na hlavnú násten
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{images/admin-stats.png}
-\caption{Štatistická sekcia admin panela -- časové rady inzerátov (zlatá krivka) a registrácií používateľov (modrá krivka) s prepínateľným obdobím (7 dní / 30 dní / 3 mesiace) a interaktívnym tooltipom pre detailné hodnoty v konkrétnom dni}
+\caption{Štatistická sekcia admin panela -- časové rady inzerátov (zlatá krivka) a registrácií používateľov (modrá krivka) s prepínateľným obdobím (7 dní / 30 dní / 3 mesiace) a interaktívnym tooltipom pre detailné hodnoty v konkrétnom dni (Zdroj: Martin Muha.)}
 \label{fig:admin-stats}
 \end{figure}
 
@@ -1714,7 +1685,7 @@ GET   & \texttt{/advertisements/map}         & polohy markerov                 &
 \bottomrule
 \end{tabular}
 \endgroup
-\caption{Overené REST API scenáre platformy RentMe}
+\caption{Overené REST API scenáre platformy RentMe (Zdroj: Martin Muha.)}
 \label{tab:rest-scenarios}
 \end{table}
 
@@ -1760,7 +1731,7 @@ A09 & Security Logging \& Monitoring  & \hlcode{AuditLog} (24 akcií: \hlcode{LO
 \bottomrule
 \end{tabular}
 \endgroup
-\caption{Výsledky bezpečnostného testovania podľa OWASP Top Ten}
+\caption{Výsledky bezpečnostného testovania podľa OWASP Top Ten (Zdroj: Martin Muha.)}
 \label{tab:owasp-results}
 \end{table}
 
@@ -1827,7 +1798,7 @@ T-15 & Responzivita na mobile (375\,px, 390\,px)             & UI správne šká
 \bottomrule
 \end{tabular}
 \endgroup
-\caption{Výsledky manuálneho používateľského testovania}
+\caption{Výsledky manuálneho používateľského testovania (Zdroj: Martin Muha.)}
 \label{tab:manual-results}
 \end{table}
 
@@ -1899,27 +1870,16 @@ Navrhnutá architektúra bola od začiatku budovaná s ohľadom na rozšíriteľ
 
 \textbf{Notifikačné e-maily:} Integrácia transakčného e-mailového servera (napr.\ SendGrid alebo Resend) pre odosielanie potvrdzovacích e-mailov pri registrácii používateľa, schválení alebo zamietnutí inzerátu a obdržaní novej správy by zvýšila zapojenie používateľov a zaručila, že žiadne dôležité oznámenie sa neminie cieľ ani v prípade, že používateľ nie je aktuálne prihlásený \parencite{sundararajan2014peer}.
 
-\section{Záver}
-
-\subsection{Zhrnutie dosiahnutých výsledkov}
+\section*{Záver}
+\addcontentsline{toc}{section}{Záver}
 \noindent
-V rámci tejto bakalárskej práce som navrhol a implementoval modernú webovú inzertnú platformu pre oblasť služieb a prenájmu. Výsledkom je funkčný ekosystém pozostávajúci zo štyroch samostatných aplikácií: verejnej platformy pre návštevníkov, používateľskej zóny pre registrovaných členov, administračného panela pre správcov a centrálneho REST API servera.
+V rámci tejto bakalárskej práce som navrhol a implementoval modernú webovú inzertnú platformu pre oblasť služieb a prenájmu. Výsledkom je funkčný ekosystém pozostávajúci zo štyroch samostatných aplikácií: verejnej platformy pre návštevníkov, používateľskej zóny pre registrovaných členov, administračného panela pre správcov a centrálneho REST API servera. Systém je postavený na modernom TypeScript stacku (NestJS, Next.js, PostgreSQL, Prisma ORM) v monorepo architektúre s využitím npm workspaces, čo umožnilo zdieľanie dátových typov a DTO objektov naprieč celým projektom, výrazne zvýšilo stabilitu systému a znížilo počet potenciálnych chýb spôsobených nekonzistentnými dátami. Implementované kľúčové funkcie zahŕňajú bezpečnú autentifikáciu s JWT tokenmi a bcrypt hashovaním hesiel, systém schvaľovania inzerátov s notifikáciami, interaktívnu mapovú vrstvu s Leaflet, dynamické filtre kategórií s JSONB ukladaním v PostgreSQL, vizuálny editor obsahu GrapesJS a analytický subsystém pre sledovanie správania používateľov.
 
-Systém je postavený na modernom TypeScript stacku (NestJS, Next.js, PostgreSQL, Prisma ORM) v monorepo architektúre s využitím npm workspaces. Táto voľba umožnila zdieľanie dátových typov a DTO objektov naprieč celým projektom, čo výrazne zvýšilo stabilitu systému a znížilo počet potenciálnych chýb spôsobených nekonzistentnými dátami.
+Porovnaním s cieľmi definovanými v úvode práce konštatujem, že všetky stanovené ciele boli splnené. Cieľ vytvorenia stabilného a bezpečného backendového zázemia bol naplnený implementáciou NestJS aplikácie s JWT autentifikáciou, bcrypt hashovaním, globálnou validáciou vstupov a systémom banovania; API je plne zdokumentované cez Swagger. Cieľ troch frontendových aplikácií pre rôzne skupiny používateľov bol naplnený samostatnými aplikáciami \hlcode{platform}, \hlcode{user} a \hlcode{admin}, ktoré poskytujú používateľské rozhranie prispôsobené každej role -- verejná platforma je optimalizovaná pre SEO, administrácia obsahuje CMS s vizuálnym editorom. Cieľ analytických nástrojov a moderácie obsahu bol naplnený asynchrónnym zaznamenávaním kliknutí na inzeráty, grafmi návštevnosti a segmentácie pre administrátora, modulmi reportovania a banovania, ktoré zabezpečujú aktívnu moderáciu komunity.
 
-Implementované kľúčové funkcie zahŕňajú: bezpečnú autentifikáciu s JWT tokenmi a bcrypt hashovaním hesiel, systém schvaľovania inzerátov s notifikáciami, interaktívnu mapovú vrstvu s Leaflet, dynamické filtre kategórií s JSONB ukladaním v PostgreSQL, vizuálny editor obsahu GrapesJS a analytický subsystém pre sledovanie správania používateľov.
+Testovanie systému prebehlo na viacerých úrovniach -- jednotkové testy biznis služieb (Jest), integračné testovanie REST API endpointov (Swagger, supertest), bezpečnostné testovanie podľa metodiky OWASP Top Ten a manuálne používateľské testovanie kľúčových tokov so zapojením piatich účastníkov. Všetky overené scenáre úspešne potvrdili správnosť implementácie autentifikácie, autorizácie aj biznis logiky. Bezpečnostné opatrenia zahŕňajú XSS a CSRF ochranu, rate limiting prihlasovacích endpointov, audit log kritických akcií a robustný systém banovania účtov.
 
-\subsection{Naplnenie stanovených cieľov}
-\noindent
-Porovnaním s cieľmi definovanými v úvode práce konštatujem nasledovné:
-
-\textbf{Cieľ 1 -- Stabilné a bezpečné backendové zázemie:} Splnený. Backend NestJS aplikácia implementuje JWT autentifikáciu, bcrypt hashovanie, globálnu validáciu vstupov a systém banovania. API je plne zdokumentované cez Swagger.
-
-\textbf{Cieľ 2 -- Tri frontendové aplikácie pre rôzne skupiny používateľov:} Splnený. Aplikácie \hlcode{platform}, \hlcode{user} a \hlcode{admin} poskytujú používateľské rozhranie prispôsobené každej role. Verejná platforma je optimalizovaná pre SEO, administrácia obsahuje CMS s vizuálnym editorom.
-
-\textbf{Cieľ 3 -- Analytické nástroje a moderácia obsahu:} Splnený. Systém asynchrónne zaznamenáva kliknutia na inzeráty a poskytuje administrátorovi grafy návštevnosti a segmentácie. Moduly reportovania a banovania zabezpečujú aktívnu moderáciu komunity.
-
-Platforma tak napĺňa svoju hlavnú misiu: konsolidovať rozptýlenú ponuku lokálnych služieb a prenájmu do jedného transparentného, bezpečného a moderného ekosystému, ktorý odstraňuje nedostatky existujúcich riešení identifikované v analýze súčasného stavu.
+Platforma tak napĺňa svoju hlavnú misiu: konsolidovať rozptýlenú ponuku lokálnych služieb a prenájmu do jedného transparentného, bezpečného a moderného ekosystému, ktorý odstraňuje nedostatky existujúcich riešení identifikované v analýze súčasného stavu. Ďalší rozvoj platformy môže smerovať k integrácii platobnej brány, presunu médií na externé objektové úložisko, doplneniu reálnych WebSocket notifikácií a integrácii transakčného e-mailového servera, čím sa potenciál systému ďalej rozšíri smerom k plnohodnotnému produkčnému nasadeniu.
 
 \par
 
